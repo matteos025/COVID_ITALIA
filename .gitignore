@@ -128,4 +128,5 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-COVID_19
+# Ignore COVID_19 directory
+COVID_19/
