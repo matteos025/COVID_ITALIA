@@ -1,6 +1,10 @@
 import json
 import matplotlib.pyplot as plt
 import numpy as np
+import os
+
+# Current directory
+__location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
 
 def media_su_giorni(date, valori, giorni):
     cumulo_valori = 0.0
@@ -14,7 +18,7 @@ def media_su_giorni(date, valori, giorni):
         media_valori.append(cumulo_valori / giorni_float)
     return date[giorni - 1:], media_valori
 
-json_file = open('/Users/matteos/Desktop/COVID/COVID-19/dati-json/dpc-covid19-ita-andamento-nazionale.json')
+json_file = open(os.path.join(__location__, 'COVID-19/dati-json/dpc-covid19-ita-andamento-nazionale.json'))
 dati = json.load(json_file)
 
 date = []

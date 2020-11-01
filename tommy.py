@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from datetime import datetime, timedelta
 import math
+import os
 
 # Italian population end of May
 it_pop = 60062012.0
@@ -10,14 +11,17 @@ it_pop = 60062012.0
 # Lumbardy population end of May
 lum_pop = 10067773.0
 
+# Current directory
+__location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
+
 # Loads data from github repo
 def load_data_italy():
-    json_file = open('/Users/matteos/Desktop/COVID/COVID-19/dati-json/dpc-covid19-ita-andamento-nazionale.json')
+    json_file = open(os.path.join(__location__, 'COVID-19/dati-json/dpc-covid19-ita-andamento-nazionale.json'))
     data = json.load(json_file)
     return data
 
 def load_data_lumbardy():
-    json_file = open('/Users/matteos/Desktop/COVID/COVID-19/dati-json/dpc-covid19-ita-regioni.json')
+    json_file = open('COVID-19/dati-json/dpc-covid19-ita-regioni.json')
     data = json.load(json_file)
     return data
 
