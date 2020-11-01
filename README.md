@@ -8,3 +8,5 @@ git clone https://github.com/matteos025/COVID_ITALIA.git
 cd COVID_ITLAIA
 
 git clone https://github.com/pcm-dpc/COVID-19.git
+
+Then can run any of the python scripts
