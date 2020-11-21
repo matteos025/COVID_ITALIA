@@ -3,10 +3,12 @@ Some python scripts that show graphs of COVID 19 data in Italy
 
 Initialization:
 
-git clone https://github.com/matteos025/COVID_ITALIA.git
+	git clone https://github.com/matteos025/COVID_ITALIA.git
 
-cd COVID_ITLAIA
+	cd COVID_ITALIA
 
-git clone https://github.com/pcm-dpc/COVID-19.git
+	git submodule update --recursive --remote
 
-Then can run any of the python scripts
+Running scripts:
+	
+	python3 name_of_script
