@@ -16,11 +16,12 @@ __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file
 
 # Loads data from github repo
 def load_data_italy():
-    json_file = open(os.path.join(__location__, 'COVID-19/dati-json/dpc-covid19-ita-andamento-nazionale.json'))
+    json_file = open(os.path.join(__location__, 
+        'COVID-19/dati-json/dpc-covid19-ita-andamento-nazionale.json'))
     data = json.load(json_file)
     return data
 
-def load_data_lumbardy():
+def load_data_regions():
     json_file = open('COVID-19/dati-json/dpc-covid19-ita-regioni.json')
     data = json.load(json_file)
     return data
@@ -268,12 +269,19 @@ def calculate_and_print(dates, n_pos, new_c, new_t, pop, isRegion, id, regionNam
     print_val(date_week_ago, n_pos_per_t_week_ago, 
         "Positivi per tamponi ultimi 7 giorni SETTIMANA FA", True)
 
-    # Today's cases per population over last 7 days
+    # Today's cases per population of 100k over last 7 days
     n_c_today = new_c_7d[len(new_c_7d) - 1] * 10
 
-    # Print out week ago's new positives in last 7 days
+    # Print today's cases per population of 100k over last 7 days
     print_val(date_today, n_c_today, 
-        "Testati ultimi 7 giorni OGGI", False)
+        "Casi testati ultimi 7 giorni OGGI", False)
+
+    # Week ago's cases per population of 100k over last 7 days
+    n_c_week_ago = new_c_7d[len(new_c_7d) - 8] * 10
+
+    # Print out week ago's cases per population of 100k over last 7 days
+    print_val(date_week_ago, n_c_week_ago, 
+        "Casi testati ultimi 7 giorni SETTIMANA FA", False)
 
     # Today's tests per population over last 7 days
     n_t_today = new_t_7d[len(new_t_7d) - 1] * 10
@@ -281,6 +289,13 @@ def calculate_and_print(dates, n_pos, new_c, new_t, pop, isRegion, id, regionNam
     # Print out week ago's new positives in last 7 days
     print_val(date_today, n_t_today, 
         "Tamponi ultimi 7 giorni OGGI", False)
+
+     # Week ago's tests per population over last 7 days
+    n_t_week_ago = new_t_7d[len(new_t_7d) - 8] * 10
+
+    # Print out week ago's new positives in last 7 days
+    print_val(date_week_ago, n_t_week_ago, 
+        "Tamponi ultimi 7 giorni SETTIMANA FA", False)
 
     if not isRegion:
         plot_last_days(30, dates, n_pos_7d, new_c_7d, new_t_7d, n_pos_per_c, n_pos_per_t, id, "ITALIA")
@@ -291,11 +306,11 @@ def calculate_and_print(dates, n_pos, new_c, new_t, pop, isRegion, id, regionNam
 if __name__ == "__main__":
 
     data_it = load_data_italy()
-    data_lum = load_data_lumbardy()
+    data_reg = load_data_regions()
 
     # Read dates, new positives and new tests
     dates_it, n_pos_it, new_c_it, new_t_it = read_data_italy(data_it)
-    dates_lum, n_pos_lum, new_c_lum, new_t_lum = read_data_lumbardy(data_lum)
+    dates_lum, n_pos_lum, new_c_lum, new_t_lum = read_data_lumbardy(data_reg)
     
     calculate_and_print(dates_it, n_pos_it, new_c_it, new_t_it, it_pop, False, 1)
 
