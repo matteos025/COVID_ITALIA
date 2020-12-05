@@ -216,7 +216,7 @@ def find_last_above(dates, n_pos_7d, num_above):
     
 def calculate_and_print(dates, n_pos, new_c, new_t, pop, isRegion, id, regionName = None):
     if not isRegion:
-        print("------------------ITALIA------------------")
+        print("-------------------ITALIA-------------------")
     else:
         print("------------------%s------------------" % regionName)
 
@@ -229,9 +229,11 @@ def calculate_and_print(dates, n_pos, new_c, new_t, pop, isRegion, id, regionNam
     n_pos_7d_today = n_pos_7d[len(n_pos_7d) - 1]
     date_today = dates[len(dates) - 1]
     
+    print("Nuovi positivi ultimi 7 giorni:")
+
     # Print out new positives last 7 days
     print_val(date_today, n_pos_7d_today, 
-        "Nuovi positivi ultimi 7 giorni OGGI", False)
+        "   \u2022 OGGI", False)
 
     # A week ago's new positives in last 7 days
     n_pos_7d_week_ago = n_pos_7d[len(n_pos_7d) - 8]
@@ -239,63 +241,71 @@ def calculate_and_print(dates, n_pos, new_c, new_t, pop, isRegion, id, regionNam
 
     # Print out week ago's new positives in last 7 days
     print_val(date_week_ago, n_pos_7d_week_ago, 
-        "Nuovi positivi ultimi 7 giorni SETTIMANA FA", False)
+        "   \u2022 SETTIMANA FA", False)
+
+    print("\nPositivi per casi testati ultimi 7 giorni:")
 
     # Today's % positive over cases in last 7 days
     n_pos_per_c_today = n_pos_per_c[len(n_pos_per_c) - 1] / 10
 
     # Print out week ago's new positives in last 7 days
     print_val(date_today, n_pos_per_c_today, 
-        "Positivi per casi testati ultimi 7 giorni OGGI", True)
+        "   \u2022 OGGI", True)
 
     # A week ago's % positive over cases in last 7 days
     n_pos_per_c_week_ago = n_pos_per_c[len(n_pos_per_c) - 8] / 10
 
     # Print out week ago's new positives in last 7 days
     print_val(date_week_ago, n_pos_per_c_week_ago, 
-        "Positivi per casi testati ultimi 7 giorni SETTIMANA FA", True)
+        "   \u2022 SETTIMANA FA", True)
+
+    print("\nPositivi per tamponi ultimi 7 giorni:")
 
     # Today's % positive over cases in last 7 days
     n_pos_per_t_today = n_pos_per_t[len(n_pos_per_t) - 1] / 10
 
     # Print out week ago's new positives per tests in last 7 days
     print_val(date_today, n_pos_per_t_today, 
-        "Positivi per tamponi ultimi 7 giorni OGGI", True)
+        "   \u2022 OGGI", True)
 
     # A week ago's % positive over cases in last 7 days
     n_pos_per_t_week_ago = n_pos_per_t[len(n_pos_per_t) - 8] / 10
 
     # Print out week ago's new positives in last 7 days
     print_val(date_week_ago, n_pos_per_t_week_ago, 
-        "Positivi per tamponi ultimi 7 giorni SETTIMANA FA", True)
+        "   \u2022 SETTIMANA FA", True)
+
+    print("\nCasi testati ultimi 7 giorni:")
 
     # Today's cases per population of 100k over last 7 days
     n_c_today = new_c_7d[len(new_c_7d) - 1] * 10
 
     # Print today's cases per population of 100k over last 7 days
     print_val(date_today, n_c_today, 
-        "Casi testati ultimi 7 giorni OGGI", False)
+        "   \u2022 OGGI", False)
 
     # Week ago's cases per population of 100k over last 7 days
     n_c_week_ago = new_c_7d[len(new_c_7d) - 8] * 10
 
     # Print out week ago's cases per population of 100k over last 7 days
     print_val(date_week_ago, n_c_week_ago, 
-        "Casi testati ultimi 7 giorni SETTIMANA FA", False)
+        "   \u2022 SETTIMANA FA", False)
+
+    print("\nTamponi ultimi 7 giorni:")
 
     # Today's tests per population over last 7 days
     n_t_today = new_t_7d[len(new_t_7d) - 1] * 10
 
     # Print out week ago's new positives in last 7 days
     print_val(date_today, n_t_today, 
-        "Tamponi ultimi 7 giorni OGGI", False)
+        "   \u2022 OGGI", False)
 
      # Week ago's tests per population over last 7 days
     n_t_week_ago = new_t_7d[len(new_t_7d) - 8] * 10
 
     # Print out week ago's new positives in last 7 days
     print_val(date_week_ago, n_t_week_ago, 
-        "Tamponi ultimi 7 giorni SETTIMANA FA", False)
+        "   \u2022 SETTIMANA FA", False)
 
     if not isRegion:
         plot_last_days(30, dates, n_pos_7d, new_c_7d, new_t_7d, n_pos_per_c, n_pos_per_t, id, "ITALIA")
