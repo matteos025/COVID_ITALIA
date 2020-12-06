@@ -341,13 +341,13 @@ def calculate_and_print(dates, n_pos, new_c, new_t, pop, isRegion, id, regionNam
 
 
 if __name__ == "__main__":
-
+    # Caricamento dei dati della protezione civile
     data_it = load_data_italy()
-    data_reg = load_data_regions()
+    data_lum = load_data_regions()
 
     # Read dates, new positives and new tests
     dates_it, n_pos_it, new_c_it, new_t_it = read_data_italy(data_it)
-    dates_lum, n_pos_lum, new_c_lum, new_t_lum = read_data_lumbardy(data_reg)
+    dates_lum, n_pos_lum, new_c_lum, new_t_lum = read_data_lumbardy(data_lum)
     
     calculate_and_print(dates_it, n_pos_it, new_c_it, new_t_it, IT_POP, False, 1)
 
