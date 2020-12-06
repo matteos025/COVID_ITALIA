@@ -48,10 +48,6 @@ def read_data_italy(data):
     # nuovi casi testati
     # nuovi tamponi
     dati = []
-    date = []
-    nuovi_positivi = []
-    nuovi_casi_testati = []
-    nuovi_tamponi = []
 
     # Variabili per calcolare i nuovi casi testati e i nuovi tamponi
     tot_c_ieri = 0
@@ -67,15 +63,8 @@ def read_data_italy(data):
         # Il dato sui casi testati inizia ad essere fornito a
         # Marzo/Aprile le liste iniziano da lì
         if tot_c_oggi != None :
-            date.append(dato['data'][5:10]) 
-            
-            nuovi_positivi.append(dato['nuovi_positivi'])
-
             nuovi_casi_testati_oggi = tot_c_oggi - tot_c_ieri
-            nuovi_casi_testati.append(nuovi_casi_testati_oggi)
-
             nuovi_tamponi_oggi = tot_t_oggi - tot_t_ieri
-            nuovi_tamponi.append(nuovi_tamponi_oggi)
 
             dato = {
                 'data' : dato['data'][5:10],
@@ -90,8 +79,7 @@ def read_data_italy(data):
             tot_c_ieri = tot_c_oggi
             tot_t_ieri = tot_t_oggi
 
-    return dati, date, nuovi_positivi, nuovi_casi_testati, \
-           nuovi_tamponi
+    return dati
 
 
 # Lettura lombarda di date, nuovi casi testati, nuovi tamponi 
@@ -105,10 +93,6 @@ def read_data_lumbardy(data):
     # nuovi_casi_testati
     # nuovi_tamponi
     dati = []
-    date = []
-    nuovi_positivi = []
-    nuovi_casi_testati = []
-    nuovi_tamponi = []
 
     # Variabili per calcolare i nuovi casi testati e i nuovi tamponi
     tot_c_ieri = 0
@@ -125,15 +109,8 @@ def read_data_lumbardy(data):
             # Il dato sui casi testati inizia ad essere fornito a
             # Marzo/Aprile le liste iniziano da lì
             if tot_c_oggi != None :
-                date.append(dato['data'][5:10])
-
-                nuovi_positivi.append(dato['nuovi_positivi'])
-
                 nuovi_casi_testati_oggi = tot_c_oggi - tot_c_ieri
-                nuovi_casi_testati.append(nuovi_casi_testati_oggi)
-
                 nuovi_tamponi_oggi = tot_t_oggi - tot_t_ieri
-                nuovi_tamponi.append(nuovi_tamponi_oggi)
 
                 dato = {
                     'data' : dato['data'][5:10],
@@ -148,13 +125,12 @@ def read_data_lumbardy(data):
                 tot_c_ieri = tot_c_oggi
                 tot_t_ieri = tot_t_oggi
 
-    return dati, date, nuovi_positivi, nuovi_casi_testati, \
-           nuovi_tamponi
+    return dati
 
 
 # Calcolo dei nuovi positivi negli ultimi 7 giorni e delle 
 # differenze tra i giorni
-def calcs(dati, date, population):
+def calcs(dati, population):
     dati_calcolati =[]
     n_pos_7d = []
     n_pos_7d_diff = []
@@ -326,8 +302,7 @@ def find_last_above(dates, n_pos_7d, num_above):
     print(("Last above %d: " % num_above) + date + " - %.2f" % val)
 
 
-def calculate_and_print(dati, dates, n_pos, new_c, new_t, pop, \
-                        isRegion, id, regionName = None):
+def calculate_and_print(dati, pop, isRegion, id, regionName = None):
     if not isRegion:
         print("-------------------ITALIA-------------------")
     else:
@@ -336,7 +311,7 @@ def calculate_and_print(dati, dates, n_pos, new_c, new_t, pop, \
     # Update dates and calculate new positives in last 7 days,
     # daily difference over new positives in last 7 das, 
     # new tests last 7 days, new positives per tests ylast 7 days
-    dati_calcolati = calcs(dati, dates, pop)
+    dati_calcolati = calcs(dati, pop)
     indice_oggi = len(dati_calcolati) - 1
     indice_sett_fa = len(dati_calcolati) - 8
 
@@ -459,15 +434,11 @@ if __name__ == "__main__":
     data_lum = load_data_regions()
 
     # Read dates, new positives and new tests
-    dati_json_it, dates_it, n_pos_it, new_c_it, new_t_it = \
-        read_data_italy(data_it)
-    dati_json_lum, dates_lum, n_pos_lum, new_c_lum, new_t_lum = \
-        read_data_lumbardy(data_lum)
+    dati_json_it = read_data_italy(data_it)
+    dati_json_lum = read_data_lumbardy(data_lum)
     
-    calculate_and_print(dati_json_it, dates_it, n_pos_it, new_c_it, \
-        new_t_it, IT_POP, False, 1)
+    calculate_and_print(dati_json_it, IT_POP, False, 1)
 
-    calculate_and_print(dati_json_lum, dates_lum, n_pos_lum, \
-        new_c_lum, new_t_lum, LUM_POP, True, 2, "LOMBARDIA")    
+    calculate_and_print(dati_json_lum, LUM_POP, True, 2, "LOMBARDIA")    
     
     plt.show()
