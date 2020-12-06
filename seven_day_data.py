@@ -4,78 +4,98 @@ import numpy as np
 from datetime import datetime, timedelta
 import math
 import os
+import enum
 
-# Italian population end of May
-it_pop = 60062012.0
+# Popolazione italiana a fine Maggio
+IT_POP = 60062012.0
 
-# Lumbardy population end of May
-lum_pop = 10067773.0
+# Popolazione lombarda a fine Maggio
+LUM_POP = 10067773.0
 
-# Current directory
+# Indici mappati ai relativi mesi
+MONTHS = {1 : "Gennaio", 2 : "Febbraio", 3 : "Marzo", 4 : "Aprile", 
+          5 : "Maggio", 6 : "Giugno", 7 : "Luglio", 8 : "Agosto", 
+          9 : "Settembre", 10 : "Ottobre", 11 : "Novembre", 12 : "Dicembre"};
+
+# Directory di questo file
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
 
-# Loads data from github repo
+# Caricamento dei dati nazionali dalla repository della protezione civile
 def load_data_italy():
     json_file = open(os.path.join(__location__, 
         'COVID19/dati-json/dpc-covid19-ita-andamento-nazionale.json'))
     data = json.load(json_file)
     return data
 
+# Caricamento dei dati lombardi dalla repository della protezione civile
 def load_data_regions():
     json_file = open('COVID19/dati-json/dpc-covid19-ita-regioni.json')
     data = json.load(json_file)
     return data
 
-# Reads relevant data from loaded data
+# Lettura nazionale di date, nuovi casi testati, nuovi tamponi 
+# e nuovi positivi, che vengono poi ritornati in 4 liste
+# TODO: Sarebbe meglio usare un JSON ARRAY con le date mappate ai valori
 def read_data_italy(data):
-    #Initialize empty lists
+    # Liste vuote
     dates = []
-    n_pos = []
-    new_new_cases = []
-    new_new_tests = []
-    new_c_yesterday = 0
-    new_t_yesterday = 0
+    new_positives = []
+    new_cases = []
+    new_tests = []
+    tot_c_yesterday = 0
+    tot_t_yesterday = 0
 
-    #Add relevant data to lists
+    # Aggiunta dei dati alle liste per ogni data disponibile
+    # Nota: I nuovi casi testati ed i nuovi tamponi effettuati non sono
+    # forniti, quindi vanno calcolati
     for dato in data:
-        new_c_today = dato['casi_testati']
-        new_t_today = dato['tamponi']
-        if new_c_today != None:
+        tot_c_today = dato['casi_testati']
+        tot_t_today = dato['tamponi']
+
+        # Il dato sui casi testati non è stato fornito da subito
+        if tot_c_today != None:
             dates.append(dato['data'][5:10])
-            n_pos.append(dato['nuovi_positivi'])
-            new_new_cases.append(new_c_today - new_c_yesterday)
-            new_new_tests.append(new_t_today - new_t_yesterday)
-            new_c_yesterday = new_c_today
-            new_t_yesterday = new_t_today
+            new_positives.append(dato['nuovi_positivi'])
+            new_cases.append(tot_c_today - tot_c_yesterday)
+            new_tests.append(tot_t_today - tot_t_yesterday)
+            tot_c_yesterday = tot_c_today
+            tot_t_yesterday = tot_t_today
 
-    return dates, n_pos, new_new_cases, new_new_tests
+    return dates, new_positives, new_cases, new_tests
 
-# Reads relevant data from loaded data
+
+# Lettura lombarda di date, nuovi casi testati, nuovi tamponi 
+# e nuovi positivi, che vengono poi ritornati in 4 liste
+# TODO: Sarebbe meglio usare un JSON ARRAY con le date mappate ai valori
 def read_data_lumbardy(data):
-    #Initialize empty lists
+    # Liste vuote
     dates = []
     n_pos = []
-    new_new_cases = []
-    new_new_tests = []
-    new_c_yesterday = 0
-    new_t_yesterday = 0
+    new_cases = []
+    new_tests = []
+    tot_c_yesterday = 0
+    tot_t_yesterday = 0
 
-    #Add relevant data to lists
+    # Aggiunta dei dati alle liste per ogni data disponibile
+    # Nota: I nuovi casi testati ed i nuovi tamponi effettuati non sono
+    # forniti, quindi vanno calcolati
     for dato in data:
         if dato['denominazione_regione'] == 'Lombardia':
-            new_c_today = dato['casi_testati']
-            new_t_today = dato['tamponi']
-            if new_c_today != None:
+            tot_c_today = dato['casi_testati']
+            tot_t_today = dato['tamponi']
+            if tot_c_today != None:
                 dates.append(dato['data'][5:10])
                 n_pos.append(dato['nuovi_positivi'])
-                new_new_cases.append(new_c_today - new_c_yesterday)
-                new_new_tests.append(new_t_today - new_t_yesterday)
-                new_c_yesterday = new_c_today
-                new_t_yesterday = new_t_today
+                new_cases.append(tot_c_today - tot_c_yesterday)
+                new_tests.append(tot_t_today - tot_t_yesterday)
+                tot_c_yesterday = tot_c_today
+                tot_t_yesterday = tot_t_today
 
-    return dates, n_pos, new_new_cases, new_new_tests
+    return dates, n_pos, new_cases, new_tests
 
-# Calculates new positives in the last 7 days and diff over each day
+
+# Calcolo dei nuovi positivi negli ultimi 7 giorni e delle 
+# differenze tra i giorni
 def calcs(dates, n_pos, new_c, new_t, population):
     n_pos_7d = []
     n_pos_7d_diff = []
@@ -131,11 +151,17 @@ def calcs(dates, n_pos, new_c, new_t, population):
 
     return dates[6:], n_pos_7d, new_c_7d, new_t_7d, n_pos_per_c_7_days, n_pos_per_t_7_days
 
+
 # Print date and relative new positive value
 def print_val(date, n_pos, print_str, is_percent):
     day = date[3] + date[4]
-    month = date[0] + date[1]
-    str_to_print = print_str + " " + day + "/" + month + ": %.2f" % n_pos
+    month_num_str = date[0] + date[1]
+    month_num_int = int(month_num_str)
+    month_str = MONTHS[month_num_int]
+    if month_str == None:
+        print("Month is not valid")
+        return
+    str_to_print = print_str + " " + day + " " + month_str + ": %.2f" % n_pos
     if is_percent:
         str_to_print = str_to_print + "%"
     print(str_to_print)
@@ -213,7 +239,8 @@ def find_last_above(dates, n_pos_7d, num_above):
             val = n_pos_7d[i]
 
     print(("Last above %d: " % num_above) + date + " - %.2f" % val)
-    
+
+
 def calculate_and_print(dates, n_pos, new_c, new_t, pop, isRegion, id, regionName = None):
     if not isRegion:
         print("-------------------ITALIA-------------------")
@@ -322,9 +349,8 @@ if __name__ == "__main__":
     dates_it, n_pos_it, new_c_it, new_t_it = read_data_italy(data_it)
     dates_lum, n_pos_lum, new_c_lum, new_t_lum = read_data_lumbardy(data_reg)
     
-    calculate_and_print(dates_it, n_pos_it, new_c_it, new_t_it, it_pop, False, 1)
+    calculate_and_print(dates_it, n_pos_it, new_c_it, new_t_it, IT_POP, False, 1)
 
-    calculate_and_print(dates_lum, n_pos_lum, new_c_lum, new_t_lum, lum_pop, True, 2, "LOMBARDIA")    
+    calculate_and_print(dates_lum, n_pos_lum, new_c_lum, new_t_lum, LUM_POP, True, 2, "LOMBARDIA")    
     
     plt.show()
-
