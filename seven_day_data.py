@@ -26,14 +26,14 @@ __location__ = os.path.realpath(os.path.join(os.getcwd(), \
 # civile
 def load_data_italy():
     json_file = open(os.path.join(__location__, 
-        'COVID19/dati-json/dpc-covid19-ita-andamento-nazionale.json'))
+        'COVID-19/dati-json/dpc-covid19-ita-andamento-nazionale.json'))
     data = json.load(json_file)
     return data
 
 # Caricamento dei dati lombardi dalla repository della protezione 
 # civile
 def load_data_regions():
-    json_file = open('COVID19/dati-json/dpc-covid19-ita-regioni.json')
+    json_file = open('COVID-19/dati-json/dpc-covid19-ita-regioni.json')
     data = json.load(json_file)
     return data
 
