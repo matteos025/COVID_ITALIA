@@ -3,7 +3,7 @@ Some python scripts that show graphs of COVID 19 data in Italy
 
 Initialization:
 
-	git clone https://github.com/matteos025/COVID_ITALIA.git
+	git clone https://github.com/matteos025/COVID_ITALIA.git --recursive
 
 	cd COVID_ITALIA
 
