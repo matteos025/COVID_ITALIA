@@ -269,8 +269,8 @@ def plot_last_days(days, dates, n_pos_7d, new_c_7d, new_t_7d, \
 
     plt.xticks(np.arange(0, days, step=2))
     plt.xlabel('Date')
-    plt.title('Valori %s cumulativi ultimi 7 giorni per 100.000 \
-        persone' % regione)
+    plt.title('Valori %s cumulativi ultimi 7 giorni per 100.000'
+        ' persone' % regione)
     plt.legend()
 
 
