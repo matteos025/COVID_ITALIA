@@ -65,12 +65,15 @@ def read_data_italy(data):
         if tot_c_oggi != None :
             nuovi_casi_testati_oggi = tot_c_oggi - tot_c_ieri
             nuovi_tamponi_oggi = tot_t_oggi - tot_t_ieri
+            entrate_ti = dato['ingressi_terapia_intensiva'] \
+                    if 'ingressi_terapia_intensiva'in dato else 0
 
             dato = {
                 'data' : dato['data'][5:10],
                 'nuovi_positivi' : dato['nuovi_positivi'],
                 'nuovi_casi_testati' : nuovi_casi_testati_oggi,
-                'nuovi_tamponi' : nuovi_tamponi_oggi
+                'nuovi_tamponi' : nuovi_tamponi_oggi,
+                'entrate_ti' : entrate_ti
             }
 
             dati.append(dato)
@@ -111,12 +114,15 @@ def read_data_lumbardy(data):
             if tot_c_oggi != None :
                 nuovi_casi_testati_oggi = tot_c_oggi - tot_c_ieri
                 nuovi_tamponi_oggi = tot_t_oggi - tot_t_ieri
+                entrate_ti = dato['ingressi_terapia_intensiva'] \
+                    if 'ingressi_terapia_intensiva'in dato else 0
 
                 dato = {
                     'data' : dato['data'][5:10],
                     'nuovi_positivi' : dato['nuovi_positivi'],
                     'nuovi_casi_testati' : nuovi_casi_testati_oggi,
-                    'nuovi_tamponi' : nuovi_tamponi_oggi
+                    'nuovi_tamponi' : nuovi_tamponi_oggi,
+                    'entrate_ti' : entrate_ti
                 }
 
                 dati.append(dato)
@@ -131,23 +137,20 @@ def read_data_lumbardy(data):
 # Calcolo dei nuovi positivi negli ultimi 7 giorni e delle 
 # differenze tra i giorni
 def calcs(dati, population):
+    # Inizializza
     dati_calcolati =[]
-    n_pos_7d = []
-    n_pos_7d_diff = []
-    new_c_7d = []
-    new_t_7d = []
-    n_pos_per_c_7_days = []
-    n_pos_per_t_7_days = []
     total_cases = 0
     total_new_c = 0
     total_new_t = 0
+    total_new_ic = 0
     relative_pop = 100000
 
     # Calculate first value
     for i in range(0, 7):
-        total_cases = total_cases + dati[i]['nuovi_positivi']
-        total_new_c = total_new_c + dati[i]['nuovi_casi_testati']
-        total_new_t = total_new_t + dati[i]['nuovi_tamponi']
+        total_cases += dati[i]['nuovi_positivi']
+        total_new_c += dati[i]['nuovi_casi_testati']
+        total_new_t += dati[i]['nuovi_tamponi']
+        total_new_ic += dati[i]['entrate_ti']
 
     # Calculate and update lists
     for i in range(7, len(dati)):
@@ -157,13 +160,7 @@ def calcs(dati, population):
         test_7_days_today = total_new_t * relative_pop / population
         n_pos_per_c_today = total_cases * 100.0 / total_new_c
         n_pos_per_t_today = total_cases * 100.0 / total_new_t
-
-        # Add calculated values to lists
-        n_pos_7d.append(n_pos_7d_today)
-        new_c_7d.append(case_7_days_today)
-        new_t_7d.append(test_7_days_today)
-        n_pos_per_c_7_days.append(n_pos_per_c_today)
-        n_pos_per_t_7_days.append(n_pos_per_t_today)
+        entry_ic_today = total_new_ic * relative_pop / population
 
         dato_calcolato = {
             'data': dati[i]['data'],
@@ -171,33 +168,41 @@ def calcs(dati, population):
             'nuovi_casi_test_7gg': case_7_days_today,
             'nuovi_tamponi_7gg': test_7_days_today,
             'nuovi_pos_per_casi_7gg': n_pos_per_c_today,
-            'nuovi_pos_per_test_7gg': n_pos_per_t_today
+            'nuovi_pos_per_test_7gg': n_pos_per_t_today,
+            'nuove_entrate_ti_7gg' : entry_ic_today
         }
 
         dati_calcolati.append(dato_calcolato)
 
         # Update yesterday's new positives
-        total_cases = total_cases - dati[i - 7]['nuovi_positivi'] \
-            + dati[i]['nuovi_positivi']
-        total_new_c = total_new_c \
-            - dati[i - 7]['nuovi_casi_testati'] \
-            + dati[i]['nuovi_casi_testati']
-        total_new_t = total_new_t - dati[i - 7]['nuovi_tamponi'] \
-            + dati[i]['nuovi_tamponi']
+        total_cases += dati[i]['nuovi_positivi'] \
+            - dati[i - 7]['nuovi_positivi']
+        total_new_c += dati[i]['nuovi_casi_testati'] \
+            - dati[i - 7]['nuovi_casi_testati']
+        total_new_t += dati[i]['nuovi_tamponi'] \
+            - dati[i - 7]['nuovi_tamponi']
+        total_new_ic += dati[i]['entrate_ti'] \
+            - dati[i - 7]['entrate_ti']
     
     # Calculate last value
     n_pos_7d_today = total_cases * relative_pop / population
     case_7_days_today = total_new_c * relative_pop / population
     test_7_days_today = total_new_t * relative_pop / population
-    n_pos_per_c_today = total_cases * relative_pop / total_new_c
-    n_pos_per_t_today = total_cases * relative_pop / total_new_t
+    n_pos_per_c_today = total_cases * 100.0 / total_new_c
+    n_pos_per_t_today = total_cases * 100.0 / total_new_t
+    entry_ic_today = total_new_ic * relative_pop / population
 
-    # Aggiunta a liste
-    n_pos_7d.append(n_pos_7d_today)
-    new_c_7d.append(case_7_days_today)
-    new_t_7d.append(test_7_days_today)
-    n_pos_per_c_7_days.append(n_pos_per_c_today)
-    n_pos_per_t_7_days.append(n_pos_per_t_today)
+    dato_calcolato = {
+        'data': dati[i]['data'],
+        'nuovi_pos_7gg': n_pos_7d_today,
+        'nuovi_casi_test_7gg': case_7_days_today,
+        'nuovi_tamponi_7gg': test_7_days_today,
+        'nuovi_pos_per_casi_7gg': n_pos_per_c_today,
+        'nuovi_pos_per_test_7gg': n_pos_per_t_today,
+        'nuove_entrate_ti_7gg' : entry_ic_today
+    }
+
+    dati_calcolati.append(dato_calcolato)
 
     return dati_calcolati
 
@@ -246,7 +251,7 @@ def print_expected_20(num_day_avg, avg_n_pos, avg_diff):
 
 
 def plot_last_days(days, dates, n_pos_7d, new_c_7d, new_t_7d, \
-                   n_pos_per_c, n_pos_per_t, id, regione):
+                   n_pos_per_c, n_pos_per_t, n_ti_7d, id, regione):
     start_date = len(dates) - days
 
     plt.figure(id)
@@ -254,18 +259,21 @@ def plot_last_days(days, dates, n_pos_7d, new_c_7d, new_t_7d, \
         n_pos_7d[start_date:])
     linea_test, = plt.plot(dates[start_date:], new_c_7d[start_date:])
     linea_tamponi, = plt.plot(dates[start_date:], \
-        new_t_7d[start_date:])
+       new_t_7d[start_date:])
     linea_pos_per_test, = plt.plot(dates[start_date:], \
-        n_pos_per_c[start_date:])
+       n_pos_per_c[start_date:])
     linea_pos_per_tamponi, = plt.plot(dates[start_date:], \
-        n_pos_per_t[start_date:])
+       n_pos_per_t[start_date:])
+    linea_entrate_ti_7d, = plt.plot(dates[start_date:], \
+       n_ti_7d[start_date:])
     linea_nuovi_pos.set_label('Nuovi positivi')
     linea_test.set_label('Nuovi casi testati * 10')
     linea_tamponi.set_label('Nuovi tamponi * 10')
     linea_pos_per_test.set_label( \
-        'Positivi per casi testati in millesimi di %')
+       'Positivi per casi testati in millesimi di %')
     linea_pos_per_tamponi.set_label( \
-        'Positivi per tamponi in millesimi di %')
+       'Positivi per tamponi in millesimi di %')
+    linea_entrate_ti_7d.set_label('Entrate in terapia intensiva')
 
     plt.xticks(np.arange(0, days, step=2))
     plt.xlabel('Date')
@@ -398,11 +406,30 @@ def calculate_and_print(dati, pop, isRegion, id, regionName = None):
     print_val(date_today, n_t_today, 
         "   \u2022 OGGI", False)
 
-     # Week ago's tests per population over last 7 days
+    # Week ago's tests per population over last 7 days
     n_t_week_ago = dati_calcolati[indice_sett_fa]['nuovi_tamponi_7gg']
 
     # Print out week ago's new positives in last 7 days
     print_val(date_week_ago, n_t_week_ago, 
+        "   \u2022 SETTIMANA FA", False)
+
+    print("\nIngressi in terapia intensiva ultimi 7 giorni:")
+
+    # Today's entries in intensive care per population over last 7 
+    # days
+    n_ti_today = dati_calcolati[indice_oggi]['nuove_entrate_ti_7gg']
+
+    # Print out week ago's new positives in last 7 days
+    print_val(date_today, n_ti_today, 
+        "   \u2022 OGGI", False)
+
+    # Week ago's entries in intensive care per population over last 7
+    # days
+    n_ti_week_ago = \
+        dati_calcolati[indice_sett_fa]['nuove_entrate_ti_7gg']
+
+    # Print out week ago's new positives in last 7 days
+    print_val(date_week_ago, n_ti_week_ago, 
         "   \u2022 SETTIMANA FA", False)
 
     # Creare liste da JSON per plottare grafici
@@ -412,20 +439,24 @@ def calculate_and_print(dati, pop, isRegion, id, regionName = None):
     new_t_7d = []
     n_pos_per_c = []
     n_pos_per_t = []
-    for dato in dati_calcolati:
-        date.append(dato['data'])
-        n_pos_7d.append(dato['nuovi_pos_7gg'])
-        new_c_7d.append(dato['nuovi_casi_test_7gg'] / 10)
-        new_t_7d.append(dato['nuovi_tamponi_7gg'] / 10)
-        n_pos_per_c.append(dato['nuovi_pos_per_casi_7gg'] * 10)
-        n_pos_per_t.append(dato['nuovi_pos_per_test_7gg'] * 10)
-
+    n_ti_7d = []
+    for i in range(0, len(dati_calcolati) - 1):
+        date.append(dati_calcolati[i]['data'])
+        n_pos_7d.append(dati_calcolati[i]['nuovi_pos_7gg'])
+        new_c_7d.append(dati_calcolati[i]['nuovi_casi_test_7gg'] / 10)
+        new_t_7d.append(dati_calcolati[i]['nuovi_tamponi_7gg'] / 10)
+        n_pos_per_c.append(
+            dati_calcolati[i]['nuovi_pos_per_casi_7gg'] * 10)
+        n_pos_per_t.append(
+            dati_calcolati[i]['nuovi_pos_per_test_7gg'] * 10)
+        n_ti_7d.append(dati_calcolati[i]['nuove_entrate_ti_7gg'])
+    
     if not isRegion:
         plot_last_days(30, date, n_pos_7d, new_c_7d, new_t_7d, \
-            n_pos_per_c, n_pos_per_t, id, "ITALIA")
+            n_pos_per_c, n_pos_per_t, n_ti_7d, id, "ITALIA")
     else:
         plot_last_days(30, date, n_pos_7d, new_c_7d, new_t_7d, \
-           n_pos_per_c, n_pos_per_t, id, regionName)
+           n_pos_per_c, n_pos_per_t, n_ti_7d, id, regionName)
 
 
 if __name__ == "__main__":
