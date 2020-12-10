@@ -65,8 +65,11 @@ def read_data_italy(data):
         if tot_c_oggi != None :
             nuovi_casi_testati_oggi = tot_c_oggi - tot_c_ieri
             nuovi_tamponi_oggi = tot_t_oggi - tot_t_ieri
-            entrate_ti = dato['ingressi_terapia_intensiva'] \
-                    if 'ingressi_terapia_intensiva'in dato else 0
+            
+            entrate_ti = 0
+            if (('ingressi_terapia_intensiva' in dato) and 
+                    (dato['ingressi_terapia_intensiva'] != None)):
+                entrate_ti = dato['ingressi_terapia_intensiva']
 
             dato = {
                 'data' : dato['data'][5:10],
@@ -114,8 +117,10 @@ def read_data_lumbardy(data):
             if tot_c_oggi != None :
                 nuovi_casi_testati_oggi = tot_c_oggi - tot_c_ieri
                 nuovi_tamponi_oggi = tot_t_oggi - tot_t_ieri
-                entrate_ti = dato['ingressi_terapia_intensiva'] \
-                    if 'ingressi_terapia_intensiva'in dato else 0
+                entrate_ti = 0
+                if (('ingressi_terapia_intensiva' in dato) and 
+                        (dato['ingressi_terapia_intensiva'] != None)):
+                    entrate_ti = dato['ingressi_terapia_intensiva']
 
                 dato = {
                     'data' : dato['data'][5:10],
@@ -273,7 +278,7 @@ def plot_last_days(days, dates, n_pos_7d, new_c_7d, new_t_7d, \
        'Positivi per casi testati in millesimi di %')
     linea_pos_per_tamponi.set_label( \
        'Positivi per tamponi in millesimi di %')
-    linea_entrate_ti_7d.set_label('Entrate in terapia intensiva')
+    linea_entrate_ti_7d.set_label('Entrate in terapia intensiva / 100')
 
     plt.xticks(np.arange(0, days, step=2))
     plt.xlabel('Date')
@@ -443,13 +448,15 @@ def calculate_and_print(dati, pop, isRegion, id, regionName = None):
     for i in range(0, len(dati_calcolati) - 1):
         date.append(dati_calcolati[i]['data'])
         n_pos_7d.append(dati_calcolati[i]['nuovi_pos_7gg'])
-        new_c_7d.append(dati_calcolati[i]['nuovi_casi_test_7gg'] / 10)
-        new_t_7d.append(dati_calcolati[i]['nuovi_tamponi_7gg'] / 10)
+        new_c_7d.append(
+            dati_calcolati[i]['nuovi_casi_test_7gg'] / 10.0)
+        new_t_7d.append(dati_calcolati[i]['nuovi_tamponi_7gg'] / 10.0)
         n_pos_per_c.append(
-            dati_calcolati[i]['nuovi_pos_per_casi_7gg'] * 10)
+            dati_calcolati[i]['nuovi_pos_per_casi_7gg'] * 10.0)
         n_pos_per_t.append(
-            dati_calcolati[i]['nuovi_pos_per_test_7gg'] * 10)
-        n_ti_7d.append(dati_calcolati[i]['nuove_entrate_ti_7gg'])
+            dati_calcolati[i]['nuovi_pos_per_test_7gg'] * 10.0)
+        n_ti_7d.append(
+            dati_calcolati[i]['nuove_entrate_ti_7gg'] * 100.0)
     
     if not isRegion:
         plot_last_days(30, date, n_pos_7d, new_c_7d, new_t_7d, \
