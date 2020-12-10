@@ -7,10 +7,10 @@ import os
 import enum
 
 # Popolazione italiana a fine Maggio
-IT_POP = 60062012.0
+TOT_POP_IT = 60062012.0
 
 # Popolazione lombarda a fine Maggio
-LUM_POP = 10067773.0
+TOT_POP_LOM = 10067773.0
 
 # Indici mappati ai relativi mesi
 MONTHS = {1 : "Gennaio", 2 : "Febbraio", 3 : "Marzo", 4 : "Aprile", 
@@ -22,31 +22,33 @@ MONTHS = {1 : "Gennaio", 2 : "Febbraio", 3 : "Marzo", 4 : "Aprile",
 __location__ = os.path.realpath(os.path.join(os.getcwd(), \
                                 os.path.dirname(__file__)))
 
+
 # Caricamento dei dati nazionali dalla repository della protezione 
 # civile
-def load_data_italy():
+def caric_dati_it():
     json_file = open(os.path.join(__location__, 
         'COVID-19/dati-json/dpc-covid19-ita-andamento-nazionale.json'))
     data = json.load(json_file)
     return data
 
-# Caricamento dei dati lombardi dalla repository della protezione 
+
+# Caricamento dei dati regionali dalla repository della protezione 
 # civile
-def load_data_regions():
+def caric_dati_reg():
     json_file = open('COVID-19/dati-json/dpc-covid19-ita-regioni.json')
     data = json.load(json_file)
     return data
 
-# Lettura nazionale di date, nuovi casi testati, nuovi tamponi 
-# e nuovi positivi, che vengono poi ritornati in 4 liste
-def read_data_italy(data):
-    # Liste vuote:
-    # dati - dizionari contententi data, nuovi positivi, nuovi casi 
-    #        testati e nuovi tamponi
-    # date
-    # nuovi positivi
-    # nuovi casi testati
-    # nuovi tamponi
+
+# Lettura dei dati nazionali caricati in una lista di dizionari. I dati
+# raccolti sono:
+#   - Date
+#   - Nuovi positivi
+#   - Nuovi casi testati 
+#   - Nuovi tamponi effettuati
+#   - Ingressi in terapia intensiva
+def lett_dati_it(data):
+    # Lista di dizionari, poi ritornata dalla funzione
     dati = []
 
     # Variabili per calcolare i nuovi casi testati e i nuovi tamponi
@@ -60,22 +62,26 @@ def read_data_italy(data):
         tot_c_oggi = dato['casi_testati']
         tot_t_oggi = dato['tamponi']
 
-        # Il dato sui casi testati inizia ad essere fornito a
-        # Marzo/Aprile le liste iniziano da lì
+        # Si prendono i dati da quando inizia ad essere fornito il
+        # dato sui casi testati (fine Aprile)
         if tot_c_oggi != None :
-            nuovi_casi_testati_oggi = tot_c_oggi - tot_c_ieri
-            nuovi_tamponi_oggi = tot_t_oggi - tot_t_ieri
+            # Calcolo dei nuovi casi testati e dei tamponi
+            # effettuati
+            nuovi_c = tot_c_oggi - tot_c_ieri
+            nuovi_t = tot_t_oggi - tot_t_ieri
             
+            # Dato fornito a partire dal 4 Dicembre
             entrate_ti = 0
             if (('ingressi_terapia_intensiva' in dato) and 
                     (dato['ingressi_terapia_intensiva'] != None)):
                 entrate_ti = dato['ingressi_terapia_intensiva']
 
+            # Dizionario con i dati che ci interessano
             dato = {
                 'data' : dato['data'][5:10],
                 'nuovi_positivi' : dato['nuovi_positivi'],
-                'nuovi_casi_testati' : nuovi_casi_testati_oggi,
-                'nuovi_tamponi' : nuovi_tamponi_oggi,
+                'nuovi_casi_testati' : nuovi_c,
+                'nuovi_tamponi' : nuovi_t,
                 'entrate_ti' : entrate_ti
             }
 
@@ -88,16 +94,15 @@ def read_data_italy(data):
     return dati
 
 
-# Lettura lombarda di date, nuovi casi testati, nuovi tamponi 
-# e nuovi positivi, che vengono poi ritornati in 4 liste
-def read_data_lumbardy(data):
-    # Liste vuote:
-    # dati - dizionari contententi data, nuovi positivi, nuovi casi
-    #        testati e nuovi tamponi
-    # date
-    # nuovi_positivi
-    # nuovi_casi_testati
-    # nuovi_tamponi
+# Lettura dei dati di una regione caricati in una lista di dizionari.
+# I dati raccolti sono:
+#   - Date
+#   - Nuovi positivi
+#   - Nuovi casi testati 
+#   - Nuovi tamponi effettuati
+#   - Ingressi in terapia intensiva
+def lett_dati_reg(data, regione):
+    # Lista di dizionari, poi ritornata dalla funzione
     dati = []
 
     # Variabili per calcolare i nuovi casi testati e i nuovi tamponi
@@ -108,20 +113,28 @@ def read_data_lumbardy(data):
     # Nota: I nuovi casi testati ed i nuovi tamponi effettuati non
     # sono forniti, quindi vanno calcolati
     for dato in data:
-        if dato['denominazione_regione'] == 'Lombardia':
+
+        # Controllo che il dato si riferisca alla regione di nostro
+        # interessa
+        if dato['denominazione_regione'] == regione:
             tot_c_oggi = dato['casi_testati']
             tot_t_oggi = dato['tamponi']
 
-            # Il dato sui casi testati inizia ad essere fornito a
-            # Marzo/Aprile le liste iniziano da lì
+            # Si prendono i dati da quando inizia ad essere fornito il
+            # dato sui casi testati (fine Aprile)
             if tot_c_oggi != None :
+                # Calcolo dei nuovi casi testati e dei tamponi
+                # effettuati
                 nuovi_casi_testati_oggi = tot_c_oggi - tot_c_ieri
                 nuovi_tamponi_oggi = tot_t_oggi - tot_t_ieri
+                
+                # Dato fornito a partire dal 4 Dicembre
                 entrate_ti = 0
                 if (('ingressi_terapia_intensiva' in dato) and 
                         (dato['ingressi_terapia_intensiva'] != None)):
                     entrate_ti = dato['ingressi_terapia_intensiva']
 
+                # Dizionario con i dati che ci interessano
                 dato = {
                     'data' : dato['data'][5:10],
                     'nuovi_positivi' : dato['nuovi_positivi'],
@@ -139,37 +152,48 @@ def read_data_lumbardy(data):
     return dati
 
 
-# Calcolo dei nuovi positivi negli ultimi 7 giorni e delle 
-# differenze tra i giorni
-def calcs(dati, population):
-    # Inizializza
-    dati_calcolati =[]
-    total_cases = 0
-    total_new_c = 0
-    total_new_t = 0
-    total_new_ic = 0
-    relative_pop = 100000
+# Calcolo dei valori cumulativi sugli ultimi 7 giorni per 100.000 
+# persone di:
+#   - Nuovi positivi
+#   - Nuovi casi testati 
+#   - Nuovi tamponi effettuati
+#   - Ingressi in terapia intensiva
+def calcoli(dati, tot_pop):
+    # Lista di dizionari, poi ritornata dalla funzione
+    dati_calcolati = []
+    
+    # Variabili usate per il calcolo dei valori cumulativi sugli 
+    # ultimi 7 gg
+    tot_nuovi_p = 0
+    tot_nuovi_c = 0
+    tot_nuovi_t = 0
+    tot_entrate_ti = 0
+    
+    # Popolazione relativa.
+    # TODO: Trasformarlo in un parametro che viene passato
+    rel_pop = 100000
 
-    # Calculate first value
+    # Calcolo del primo valore per ciascuno dei dati
     for i in range(0, 7):
-        total_cases += dati[i]['nuovi_positivi']
-        total_new_c += dati[i]['nuovi_casi_testati']
-        total_new_t += dati[i]['nuovi_tamponi']
-        total_new_ic += dati[i]['entrate_ti']
+        tot_nuovi_p += dati[i]['nuovi_positivi']
+        tot_nuovi_c += dati[i]['nuovi_casi_testati']
+        tot_nuovi_t += dati[i]['nuovi_tamponi']
+        tot_entrate_ti += dati[i]['entrate_ti']
 
-    # Calculate and update lists
+    # Calcolo e aggiornamento della lista dati_calcolati
     for i in range(7, len(dati)):
-        # Calculate new values
-        n_pos_7d_today = total_cases * relative_pop / population
-        case_7_days_today = total_new_c * relative_pop / population
-        test_7_days_today = total_new_t * relative_pop / population
-        n_pos_per_c_today = total_cases * 100.0 / total_new_c
-        n_pos_per_t_today = total_cases * 100.0 / total_new_t
-        entry_ic_today = total_new_ic * relative_pop / population
+        # Calcolo dei nuovi valori
+        n_pos_7gg = tot_nuovi_p * rel_pop / tot_pop
+        case_7_days_today = tot_nuovi_c * rel_pop / tot_pop
+        test_7_days_today = tot_nuovi_t * rel_pop / tot_pop
+        n_pos_per_c_today = tot_nuovi_p * 100.0 / tot_nuovi_c
+        n_pos_per_t_today = tot_nuovi_p * 100.0 / tot_nuovi_t
+        entry_ic_today = tot_entrate_ti * rel_pop / tot_pop
 
+        # Dizionario con i dati che ci interessano
         dato_calcolato = {
-            'data': dati[i]['data'],
-            'nuovi_pos_7gg': n_pos_7d_today,
+            'data': dati[i - 1]['data'],
+            'nuovi_pos_7gg': n_pos_7gg,
             'nuovi_casi_test_7gg': case_7_days_today,
             'nuovi_tamponi_7gg': test_7_days_today,
             'nuovi_pos_per_casi_7gg': n_pos_per_c_today,
@@ -179,27 +203,28 @@ def calcs(dati, population):
 
         dati_calcolati.append(dato_calcolato)
 
-        # Update yesterday's new positives
-        total_cases += dati[i]['nuovi_positivi'] \
+        # Aggiornamento di tutti i valori
+        tot_nuovi_p += dati[i]['nuovi_positivi'] \
             - dati[i - 7]['nuovi_positivi']
-        total_new_c += dati[i]['nuovi_casi_testati'] \
+        tot_nuovi_c += dati[i]['nuovi_casi_testati'] \
             - dati[i - 7]['nuovi_casi_testati']
-        total_new_t += dati[i]['nuovi_tamponi'] \
+        tot_nuovi_t += dati[i]['nuovi_tamponi'] \
             - dati[i - 7]['nuovi_tamponi']
-        total_new_ic += dati[i]['entrate_ti'] \
+        tot_entrate_ti += dati[i]['entrate_ti'] \
             - dati[i - 7]['entrate_ti']
     
-    # Calculate last value
-    n_pos_7d_today = total_cases * relative_pop / population
-    case_7_days_today = total_new_c * relative_pop / population
-    test_7_days_today = total_new_t * relative_pop / population
-    n_pos_per_c_today = total_cases * 100.0 / total_new_c
-    n_pos_per_t_today = total_cases * 100.0 / total_new_t
-    entry_ic_today = total_new_ic * relative_pop / population
+    # Calcolo dell'ultimo valore
+    n_pos_7gg = tot_nuovi_p * rel_pop / tot_pop
+    case_7_days_today = tot_nuovi_c * rel_pop / tot_pop
+    test_7_days_today = tot_nuovi_t * rel_pop / tot_pop
+    n_pos_per_c_today = tot_nuovi_p * 100.0 / tot_nuovi_c
+    n_pos_per_t_today = tot_nuovi_p * 100.0 / tot_nuovi_t
+    entry_ic_today = tot_entrate_ti * rel_pop / tot_pop
 
+    # Dizionario con i dati che ci interessano
     dato_calcolato = {
-        'data': dati[i]['data'],
-        'nuovi_pos_7gg': n_pos_7d_today,
+        'data': dati[len(dati) - 1]['data'],
+        'nuovi_pos_7gg': n_pos_7gg,
         'nuovi_casi_test_7gg': case_7_days_today,
         'nuovi_tamponi_7gg': test_7_days_today,
         'nuovi_pos_per_casi_7gg': n_pos_per_c_today,
@@ -315,16 +340,15 @@ def find_last_above(dates, n_pos_7d, num_above):
     print(("Last above %d: " % num_above) + date + " - %.2f" % val)
 
 
-def calculate_and_print(dati, pop, isRegion, id, regionName = None):
+def calcoli_e_stampe(dati, pop, isRegion, id, regionName = None):
     if not isRegion:
         print("-------------------ITALIA-------------------")
     else:
         print("------------------%s------------------" % regionName)
 
-    # Update dates and calculate new positives in last 7 days,
-    # daily difference over new positives in last 7 das, 
-    # new tests last 7 days, new positives per tests ylast 7 days
-    dati_calcolati = calcs(dati, pop)
+    dati_calcolati = calcoli(dati, pop)
+
+    # Indici di oggi e di una settimana fa'
     indice_oggi = len(dati_calcolati) - 1
     indice_sett_fa = len(dati_calcolati) - 8
 
@@ -336,7 +360,7 @@ def calculate_and_print(dati, pop, isRegion, id, regionName = None):
     print("Nuovi positivi ultimi 7 giorni:")
 
     # Print out new positives last 7 days
-    print_val(date_today, n_pos_7d_today, 
+    print_val(date_today, n_pos_7d_today,
         "   \u2022 OGGI", False)
 
     # A week ago's new positives in last 7 days
@@ -445,7 +469,7 @@ def calculate_and_print(dati, pop, isRegion, id, regionName = None):
     n_pos_per_c = []
     n_pos_per_t = []
     n_ti_7d = []
-    for i in range(0, len(dati_calcolati) - 1):
+    for i in range(0, len(dati_calcolati)):
         date.append(dati_calcolati[i]['data'])
         n_pos_7d.append(dati_calcolati[i]['nuovi_pos_7gg'])
         new_c_7d.append(
@@ -467,16 +491,17 @@ def calculate_and_print(dati, pop, isRegion, id, regionName = None):
 
 
 if __name__ == "__main__":
-    # Caricamento dei dati della protezione civile
-    data_it = load_data_italy()
-    data_lum = load_data_regions()
+    dati_it = caric_dati_it()
+    dati_reg = caric_dati_reg()
 
-    # Read dates, new positives and new tests
-    dati_json_it = read_data_italy(data_it)
-    dati_json_lum = read_data_lumbardy(data_lum)
+    # TODO: Per calcolare e stampare più regioni bisognerebbe
+    # che questa fosse una lista di stringhe di nomi di regione
+    reg = 'Lombardia'
+
+    dati_json_it = lett_dati_it(dati_it)
+    dati_json_lom = lett_dati_reg(dati_reg, reg)
     
-    calculate_and_print(dati_json_it, IT_POP, False, 1)
-
-    calculate_and_print(dati_json_lum, LUM_POP, True, 2, "LOMBARDIA")    
+    calcoli_e_stampe(dati_json_it, TOT_POP_IT, False, 1)
+    calcoli_e_stampe(dati_json_lom, TOT_POP_LOM, True, 2, reg.upper())
     
     plt.show()
