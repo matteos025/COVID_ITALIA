@@ -23,33 +23,34 @@ __location__ = os.path.realpath(os.path.join(os.getcwd(), \
                                 os.path.dirname(__file__)))
 
 
-# Caricamento dei dati nazionali dalla repository della protezione 
-# civile
+# @desc     caricamento dei dati nazionali dalla repository della Protezione 
+#           Civile
+# @param    N/A
+# @return   lista di dizionari contenenti i dati nazionali giornalieri
 def caric_dati_it():
-    json_file = open(os.path.join(__location__, 
+    json_file = open(os.path.join(__location__,
         'COVID-19/dati-json/dpc-covid19-ita-andamento-nazionale.json'))
     data = json.load(json_file)
     return data
 
 
-# Caricamento dei dati regionali dalla repository della protezione 
-# civile
+# @desc     caricamento dei dati di tutte le regioni italiane dalla repository 
+#           della Protezione Civile
+# @return   lista di dizionari contenenti i dati nazionali giornalieri
 def caric_dati_reg():
     json_file = open('COVID-19/dati-json/dpc-covid19-ita-regioni.json')
     data = json.load(json_file)
     return data
 
 
-# Lettura dei dati nazionali caricati in una lista di dizionari. I dati
-# raccolti sono:
-#   - Date
-#   - Nuovi positivi
-#   - Nuovi casi testati 
-#   - Nuovi tamponi effettuati
-#   - Ingressi in terapia intensiva
-def lett_dati_it(data):
+# @desc     lettura e potenziale calcolo di dati nazionali riguardanti nuovi 
+#           positivi, nuovi casi testati, nuovi tamponi effettuati ed 
+#           ingressi in terapia intensiva
+# @param    list dati dati nazionali giornalieri caricati
+# @return   list dizionari contenenti i dati nazionali giornalieri
+def lett_dati_it(dati):
     # Lista di dizionari, poi ritornata dalla funzione
-    dati = []
+    dati_calcolati = []
 
     # Variabili per calcolare i nuovi casi testati e i nuovi tamponi
     tot_c_ieri = 0
@@ -58,7 +59,7 @@ def lett_dati_it(data):
     # Aggiunta dei dati alle liste per ogni data disponibile
     # Nota: I nuovi casi testati ed i nuovi tamponi effettuati non
     # sono forniti, quindi vanno calcolati
-    for dato in data:
+    for dato in dati:
         tot_c_oggi = dato['casi_testati']
         tot_t_oggi = dato['tamponi']
 
@@ -85,25 +86,24 @@ def lett_dati_it(data):
                 'entrate_ti' : entrate_ti
             }
 
-            dati.append(dato)
+            dati_calcolati.append(dato)
 
             # Aggiornamento valori
             tot_c_ieri = tot_c_oggi
             tot_t_ieri = tot_t_oggi
 
-    return dati
+    return dati_calcolati
 
 
-# Lettura dei dati di una regione caricati in una lista di dizionari.
-# I dati raccolti sono:
-#   - Date
-#   - Nuovi positivi
-#   - Nuovi casi testati 
-#   - Nuovi tamponi effettuati
-#   - Ingressi in terapia intensiva
-def lett_dati_reg(data, regione):
+# @desc     lettura e potenziale calcolo di dati di una regione riguardanti 
+#           nuovi positivi, nuovi casi testati, nuovi tamponi effettuati ed 
+#           ingressi in terapia intensiva
+# @param    list dati dati nazionali giornalieri caricati
+# @param    string regione la regione i cui dati ritornare
+# @return   list dizionari contenenti i dati nazionali giornalieri
+def lett_dati_reg(dati, regione):
     # Lista di dizionari, poi ritornata dalla funzione
-    dati = []
+    dati_calcolati = []
 
     # Variabili per calcolare i nuovi casi testati e i nuovi tamponi
     tot_c_ieri = 0
@@ -112,8 +112,7 @@ def lett_dati_reg(data, regione):
     # Aggiunta dei dati alle liste per ogni data disponibile
     # Nota: I nuovi casi testati ed i nuovi tamponi effettuati non
     # sono forniti, quindi vanno calcolati
-    for dato in data:
-
+    for dato in dati:
         # Controllo che il dato si riferisca alla regione di nostro
         # interessa
         if dato['denominazione_regione'] == regione:
@@ -143,22 +142,25 @@ def lett_dati_reg(data, regione):
                     'entrate_ti' : entrate_ti
                 }
 
-                dati.append(dato)
+                dati_calcolati.append(dato)
 
                 # Aggiornamento valori
                 tot_c_ieri = tot_c_oggi
                 tot_t_ieri = tot_t_oggi
 
-    return dati
+    return dati_calcolati
 
 
-# Calcolo dei valori cumulativi sugli ultimi 7 giorni per 100.000 
-# persone di:
-#   - Nuovi positivi
-#   - Nuovi casi testati 
-#   - Nuovi tamponi effettuati
-#   - Ingressi in terapia intensiva
-def calcoli(dati, tot_pop):
+# @desc     calcolo di nuovi positivi, nuovi casi testati, nuovi tamponi 
+#           effettuati, percentuale di positivi per casi testati, percentuale di
+#           positivi per tamponi effettuati ed ingressi in terapia intensiva
+#           cumulativi sugli ultimi gg giorni per rel_pop persone
+# @param    list dati dati nazionali giornalieri caricati e calcolati
+# @param    float tot_pop popolazione totale della nazione/regione da calcolare
+# @param    int gg giorni cumulativi dei dati
+# @param    float rel_pop popolazione relativa sulla quale calcolare i dati
+# @return   list dizionari contenenti i dati nazionali giornalieri calcolati
+def calcoli(dati, tot_pop, gg, rel_pop):
     # Lista di dizionari, poi ritornata dalla funzione
     dati_calcolati = []
     
@@ -168,10 +170,6 @@ def calcoli(dati, tot_pop):
     tot_nuovi_c = 0
     tot_nuovi_t = 0
     tot_entrate_ti = 0
-    
-    # Popolazione relativa.
-    # TODO: Trasformarlo in un parametro che viene passato
-    rel_pop = 100000
 
     # Calcolo del primo valore per ciascuno dei dati
     for i in range(0, 7):
@@ -237,14 +235,21 @@ def calcoli(dati, tot_pop):
     return dati_calcolati
 
 
-# Print date and relative new positive value
-def print_val(date, n_pos, print_str, is_percent):
+# @desc     TODO
+# @param    string date data
+# @param    float n_pos valore
+# @param    string print_str stringa iniziale da stampare
+# @param    bool is_percent indica se il valore da stampare è una percentuale
+#           oppure no
+# @return   N/A
+# TODO: Cambiare funzione in italiano e commentare
+def stampa_valore(date, n_pos, print_str, is_percent):
     day = date[3] + date[4]
     month_num_str = date[0] + date[1]
     month_num_int = int(month_num_str)
     month_str = MONTHS[month_num_int]
     if month_str == None:
-        print("Month is not valid")
+        print("Mese non è valido.")
         return
     str_to_print = print_str + " " + day + " " + month_str \
                    + ": %.2f" % n_pos
@@ -253,6 +258,12 @@ def print_val(date, n_pos, print_str, is_percent):
     print(str_to_print)
 
 
+# @desc     TODO
+# @param    TODO
+# @param    TODO
+# @param    TODO
+# @return   TODO
+# TODO: Cambiare funzione in italiano e commentare
 def avg_over_some_days(date, valori, giorni):
     cumulo_valori = 0.0
     media_valori = []
@@ -267,6 +278,12 @@ def avg_over_some_days(date, valori, giorni):
     return date[giorni - 1:], media_valori
 
 
+# @desc     TODO
+# @param    TODO
+# @param    TODO
+# @param    TODO
+# @return   TODO
+# TODO: Cambiare funzione in italiano e commentare
 def print_expected_20(num_day_avg, avg_n_pos, avg_diff):
     last_avg_n_pos_diff = avg_diff[len(avg_diff) - 1]
     last_avg_n_pos = avg_n_pos[len(avg_n_pos) - 1]
@@ -280,29 +297,35 @@ def print_expected_20(num_day_avg, avg_n_pos, avg_diff):
         print("Trend negativo, previsione a 20.0 impossibile")
 
 
-def plot_last_days(days, dates, n_pos_7d, new_c_7d, new_t_7d, \
-                   n_pos_per_c, n_pos_per_t, n_ti_7d, id, regione):
+# @desc     TODO
+# @param    TODO
+# @param    TODO
+# @param    TODO
+# @return   TODO
+# TODO: Cambiare funzione in italiano e commentare
+def traccia_ultimi_giorni(days, dates, n_pos_7d, new_c_7d, new_t_7d, \
+                          n_pos_per_c, n_pos_per_t, n_ti_7d, id, regione):
     start_date = len(dates) - days
 
     plt.figure(id)
-    linea_nuovi_pos, = plt.plot(dates[start_date:], \
-        n_pos_7d[start_date:])
+
+    linea_nuovi_pos, = plt.plot(dates[start_date:], n_pos_7d[start_date:])
+    linea_nuovi_pos.set_label('Nuovi positivi')
+
     linea_test, = plt.plot(dates[start_date:], new_c_7d[start_date:])
-    linea_tamponi, = plt.plot(dates[start_date:], \
-       new_t_7d[start_date:])
-    linea_pos_per_test, = plt.plot(dates[start_date:], \
-       n_pos_per_c[start_date:])
+    linea_test.set_label('Nuovi casi testati * 10')
+
+    linea_tamponi, = plt.plot(dates[start_date:], new_t_7d[start_date:])
+    linea_tamponi.set_label('Nuovi tamponi * 10')
+
+    linea_pos_per_test, = plt.plot(dates[start_date:], n_pos_per_c[start_date:])
+    linea_pos_per_test.set_label('Positivi per casi testati in millesimi di %')
+
     linea_pos_per_tamponi, = plt.plot(dates[start_date:], \
        n_pos_per_t[start_date:])
-    linea_entrate_ti_7d, = plt.plot(dates[start_date:], \
-       n_ti_7d[start_date:])
-    linea_nuovi_pos.set_label('Nuovi positivi')
-    linea_test.set_label('Nuovi casi testati * 10')
-    linea_tamponi.set_label('Nuovi tamponi * 10')
-    linea_pos_per_test.set_label( \
-       'Positivi per casi testati in millesimi di %')
-    linea_pos_per_tamponi.set_label( \
-       'Positivi per tamponi in millesimi di %')
+    linea_pos_per_tamponi.set_label('Positivi per tamponi in millesimi di %')
+
+    linea_entrate_ti_7d, = plt.plot(dates[start_date:], n_ti_7d[start_date:])
     linea_entrate_ti_7d.set_label('Entrate in terapia intensiva / 100')
 
     plt.xticks(np.arange(0, days, step=2))
@@ -312,6 +335,12 @@ def plot_last_days(days, dates, n_pos_7d, new_c_7d, new_t_7d, \
     plt.legend()
 
 
+# @desc     TODO
+# @param    TODO
+# @param    TODO
+# @param    TODO
+# @return   TODO
+# TODO: Cambiare funzione in italiano e commentare
 def find_last_decrease(dates, n_pos_7d):
     date = "00/00"
     val_prima = 0.0
@@ -328,6 +357,12 @@ def find_last_decrease(dates, n_pos_7d):
     print(date + ": %.2f" % val)
 
 
+# @desc     TODO
+# @param    TODO
+# @param    TODO
+# @param    TODO
+# @return   TODO
+# TODO: Cambiare funzione in italiano e commentare
 def find_last_above(dates, n_pos_7d, num_above):
     date = "00/00"
     val = 0.0
@@ -340,125 +375,101 @@ def find_last_above(dates, n_pos_7d, num_above):
     print(("Last above %d: " % num_above) + date + " - %.2f" % val)
 
 
-def calcoli_e_stampe(dati, pop, isRegion, id, regionName = None):
-    if not isRegion:
-        print("-------------------ITALIA-------------------")
-    else:
-        print("------------------%s------------------" % regionName)
+# @desc     TODO
+# @param    TODO
+# @param    TODO
+# @param    TODO
+# @return   N/A
+def stampa_due_valori(f_iniz, d1, v1, f1, d2, v2, f2, se_percentuale):
+    print(f_iniz)
+    stampa_valore(d1, v1, f1, se_percentuale)
+    stampa_valore(d2, v2, f2, se_percentuale)
 
-    dati_calcolati = calcoli(dati, pop)
+
+# Calcola i dati interessanti, stampa i dati interessanti di oggi e di
+# una settimana fa e poi traccia un grafico dei dati negli ultimi 30 giorni
+# @desc     TODO
+# @param    TODO
+# @param    TODO
+# @param    TODO
+# @return   TODO
+# TODO: Cambiare funzione in italiano e commentare
+def calcoli_e_stampe(dati, regionName, tot_pop, id_grafico, pop_rel = 100000.0,
+                     gg_cum = 7, gg_trac = 30):
+    # Prima stampa per distinguere Italia e regioni
+    print("------------------%s------------------" % regionName)
+
+    dati_calcolati = calcoli(dati, tot_pop, gg_cum, pop_rel)
 
     # Indici di oggi e di una settimana fa'
     indice_oggi = len(dati_calcolati) - 1
     indice_sett_fa = len(dati_calcolati) - 8
 
+    # Data di oggi e data di una settimana fa'
+    data_oggi = dati_calcolati[indice_oggi]['data']
+    data_sett_fa = dati_calcolati[indice_sett_fa]['data']
+
     # New positives in last 7 days
-    n_pos_7d_today = \
-        dati_calcolati[indice_oggi]['nuovi_pos_7gg']
-    date_today = dati_calcolati[indice_oggi]['data']
-    
-    print("Nuovi positivi ultimi 7 giorni:")
-
-    # Print out new positives last 7 days
-    print_val(date_today, n_pos_7d_today,
-        "   \u2022 OGGI", False)
-
+    n_pos_7d_today = dati_calcolati[indice_oggi]['nuovi_pos_7gg']
     # A week ago's new positives in last 7 days
-    n_pos_7d_week_ago = \
-        dati_calcolati[indice_sett_fa]['nuovi_pos_7gg']
-    date_week_ago = dati_calcolati[indice_sett_fa]['data']
-
-    # Print out week ago's new positives in last 7 days
-    print_val(date_week_ago, n_pos_7d_week_ago, 
+    n_pos_7d_week_ago = dati_calcolati[indice_sett_fa]['nuovi_pos_7gg']
+    
+    frase_iniziale = "Nuovi positivi ultimi 7 giorni:"
+    stampa_due_valori(frase_iniziale, data_oggi, n_pos_7d_today, 
+        "   \u2022 OGGI", data_sett_fa, n_pos_7d_week_ago, 
         "   \u2022 SETTIMANA FA", False)
 
-    print("\nPositivi per casi testati ultimi 7 giorni:")
-
     # Today's % positive over cases in last 7 days
-    n_pos_per_c_today = \
-        dati_calcolati[indice_oggi]['nuovi_pos_per_casi_7gg']
-
-    # Print out week ago's new positives in last 7 days
-    print_val(date_today, n_pos_per_c_today, 
-        "   \u2022 OGGI", True)
-
-    # A week ago's % positive over cases in last 7 days
+    n_pos_per_c_today = dati_calcolati[indice_oggi]['nuovi_pos_per_casi_7gg']
+        # A week ago's % positive over cases in last 7 days
     n_pos_per_c_week_ago = \
         dati_calcolati[indice_sett_fa]['nuovi_pos_per_casi_7gg']
 
-    # Print out week ago's new positives in last 7 days
-    print_val(date_week_ago, n_pos_per_c_week_ago, 
+    frase_iniziale = "\nPositivi per casi testati ultimi 7 giorni:"
+    stampa_due_valori(frase_iniziale, data_oggi, n_pos_per_c_today, 
+        "   \u2022 OGGI", data_sett_fa, n_pos_per_c_week_ago, 
         "   \u2022 SETTIMANA FA", True)
 
-    print("\nPositivi per tamponi ultimi 7 giorni:")
-
     # Today's % positive over cases in last 7 days
-    n_pos_per_t_today = \
-        dati_calcolati[indice_oggi]['nuovi_pos_per_test_7gg']
-
-    # Print out week ago's new positives per tests in last 7 days
-    print_val(date_today, n_pos_per_t_today, 
-        "   \u2022 OGGI", True)
-
+    n_pos_per_t_today = dati_calcolati[indice_oggi]['nuovi_pos_per_test_7gg']
     # A week ago's % positive over cases in last 7 days
     n_pos_per_t_week_ago = \
         dati_calcolati[indice_sett_fa]['nuovi_pos_per_test_7gg']
 
-    # Print out week ago's new positives in last 7 days
-    print_val(date_week_ago, n_pos_per_t_week_ago, 
+    frase_iniziale = "\nPositivi per tamponi ultimi 7 giorni:"
+    stampa_due_valori(frase_iniziale, data_oggi, n_pos_per_t_today, 
+        "   \u2022 OGGI", data_sett_fa, n_pos_per_t_week_ago, 
         "   \u2022 SETTIMANA FA", True)
-
-    print("\nCasi testati ultimi 7 giorni:")
 
     # Today's cases per population of 100k over last 7 days
     n_c_today = dati_calcolati[indice_oggi]['nuovi_casi_test_7gg']
-
-    # Print today's cases per population of 100k over last 7 days
-    print_val(date_today, n_c_today, 
-        "   \u2022 OGGI", False)
-
     # Week ago's cases per population of 100k over last 7 days
     n_c_week_ago = \
         dati_calcolati[indice_sett_fa]['nuovi_casi_test_7gg']
 
-    # Print out week ago's cases per population of 100k over last 
-    # 7 days
-    print_val(date_week_ago, n_c_week_ago, 
+    frase_iniziale = "\nCasi testati ultimi 7 giorni:"
+    stampa_due_valori(frase_iniziale, data_oggi, n_c_today, 
+        "   \u2022 OGGI", data_sett_fa, n_c_week_ago, 
         "   \u2022 SETTIMANA FA", False)
-
-    print("\nTamponi ultimi 7 giorni:")
 
     # Today's tests per population over last 7 days
     n_t_today = dati_calcolati[indice_oggi]['nuovi_tamponi_7gg']
-
-    # Print out week ago's new positives in last 7 days
-    print_val(date_today, n_t_today, 
-        "   \u2022 OGGI", False)
-
     # Week ago's tests per population over last 7 days
     n_t_week_ago = dati_calcolati[indice_sett_fa]['nuovi_tamponi_7gg']
 
-    # Print out week ago's new positives in last 7 days
-    print_val(date_week_ago, n_t_week_ago, 
+    frase_iniziale = "\nTamponi ultimi 7 giorni:"
+    stampa_due_valori(frase_iniziale, data_oggi, n_t_today, 
+        "   \u2022 OGGI", data_sett_fa, n_t_week_ago, 
         "   \u2022 SETTIMANA FA", False)
 
-    print("\nIngressi in terapia intensiva ultimi 7 giorni:")
-
-    # Today's entries in intensive care per population over last 7 
-    # days
+    # Today's entries in intensive care per population over last 7 days
     n_ti_today = dati_calcolati[indice_oggi]['nuove_entrate_ti_7gg']
+    # Week ago's entries in intensive care per population over last 7 days
+    n_ti_week_ago = dati_calcolati[indice_sett_fa]['nuove_entrate_ti_7gg']
 
-    # Print out week ago's new positives in last 7 days
-    print_val(date_today, n_ti_today, 
-        "   \u2022 OGGI", False)
-
-    # Week ago's entries in intensive care per population over last 7
-    # days
-    n_ti_week_ago = \
-        dati_calcolati[indice_sett_fa]['nuove_entrate_ti_7gg']
-
-    # Print out week ago's new positives in last 7 days
-    print_val(date_week_ago, n_ti_week_ago, 
+    frase_iniziale = "\nIngressi in terapia intensiva ultimi 7 giorni:"
+    stampa_due_valori(frase_iniziale, data_oggi, n_ti_today, 
+        "   \u2022 OGGI", data_sett_fa, n_ti_week_ago, 
         "   \u2022 SETTIMANA FA", False)
 
     # Creare liste da JSON per plottare grafici
@@ -469,6 +480,7 @@ def calcoli_e_stampe(dati, pop, isRegion, id, regionName = None):
     n_pos_per_c = []
     n_pos_per_t = []
     n_ti_7d = []
+    
     for i in range(0, len(dati_calcolati)):
         date.append(dati_calcolati[i]['data'])
         n_pos_7d.append(dati_calcolati[i]['nuovi_pos_7gg'])
@@ -482,12 +494,8 @@ def calcoli_e_stampe(dati, pop, isRegion, id, regionName = None):
         n_ti_7d.append(
             dati_calcolati[i]['nuove_entrate_ti_7gg'] * 100.0)
     
-    if not isRegion:
-        plot_last_days(30, date, n_pos_7d, new_c_7d, new_t_7d, \
-            n_pos_per_c, n_pos_per_t, n_ti_7d, id, "ITALIA")
-    else:
-        plot_last_days(30, date, n_pos_7d, new_c_7d, new_t_7d, \
-           n_pos_per_c, n_pos_per_t, n_ti_7d, id, regionName)
+    traccia_ultimi_giorni(gg_trac, date, n_pos_7d, new_c_7d, new_t_7d, \
+        n_pos_per_c, n_pos_per_t, n_ti_7d, id_grafico, regionName)
 
 
 if __name__ == "__main__":
@@ -496,12 +504,17 @@ if __name__ == "__main__":
 
     # TODO: Per calcolare e stampare più regioni bisognerebbe
     # che questa fosse una lista di stringhe di nomi di regione
-    reg = 'Lombardia'
+    reg1 = 'Italia'
+    reg2 = 'Lombardia'
 
     dati_json_it = lett_dati_it(dati_it)
-    dati_json_lom = lett_dati_reg(dati_reg, reg)
+    dati_json_lom = lett_dati_reg(dati_reg, reg2)
     
-    calcoli_e_stampe(dati_json_it, TOT_POP_IT, False, 1)
-    calcoli_e_stampe(dati_json_lom, TOT_POP_LOM, True, 2, reg.upper())
+    pop_rel = 100000.0
+    gg_cum = 7
+
+    calcoli_e_stampe(dati_json_it, reg1.upper(), TOT_POP_IT, 1)
+    calcoli_e_stampe(dati_json_lom, reg2.upper(), TOT_POP_LOM, 2)
     
     plt.show()
+
