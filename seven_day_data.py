@@ -235,27 +235,37 @@ def calcoli(dati, tot_pop, gg, rel_pop):
     return dati_calcolati
 
 
-# @desc     TODO
-# @param    string date data
-# @param    float n_pos valore
-# @param    string print_str stringa iniziale da stampare
-# @param    bool is_percent indica se il valore da stampare è una percentuale
-#           oppure no
+# @desc     stampa la stringa iniziale, seguita dalla data e dal valore
+# @param    string data data del dato
+# @param    float val il dato
+# @param    string str_iniz stringa iniziale da stampare
+# @param    bool se_percentuale indica se il valore da stampare è una 
+#                               percentuale oppure no
 # @return   N/A
 # TODO: Cambiare funzione in italiano e commentare
-def stampa_valore(date, n_pos, print_str, is_percent):
-    day = date[3] + date[4]
-    month_num_str = date[0] + date[1]
-    month_num_int = int(month_num_str)
-    month_str = MONTHS[month_num_int]
-    if month_str == None:
-        print("Mese non è valido.")
+def stampa_valore(data, val, str_iniz, se_percentuale):
+    # Recupera giorno e mese in formato stringa di numero
+    giorno = data[3] + data[4]
+    mese_str_di_num = data[0] + data[1]
+
+    # Conversione del mese da stringa di un numero in un numero
+    mese_int = int(mese_str_di_num)
+
+    # Conversione da intero a stringa
+    if mese_int not in MONTHS:
+        print("Mese non è valido: %d" % mese_int)
         return
-    str_to_print = print_str + " " + day + " " + month_str \
-                   + ": %.2f" % n_pos
-    if is_percent:
-        str_to_print = str_to_print + "%"
-    print(str_to_print)
+    mese_str = MONTHS[mese_int]
+
+    # Formulazione della stringa da stampare
+    str_da_stamp = str_iniz + " " + giorno + " " + mese_str \
+                   + ": %.2f" % val
+
+    # Aggiunta del carattere percentuale
+    if se_percentuale:
+        str_da_stamp += '%'
+
+    print(str_da_stamp)
 
 
 # @desc     TODO
@@ -375,10 +385,15 @@ def find_last_above(dates, n_pos_7d, num_above):
     print(("Last above %d: " % num_above) + date + " - %.2f" % val)
 
 
-# @desc     TODO
-# @param    TODO
-# @param    TODO
-# @param    TODO
+# @desc     Stampa due valori con rispettive date per paragonarli
+# @param    string f_iniz stringa iniziale stampata per identificare i dati
+# @param    string d1 data del primo valore
+# @param    float v1 primo valore
+# @param    string f1 frase iniziale da stampare per il primo valore
+# @param    string d2 data del secondo valore
+# @param    string v2 il secondo valore
+# @param    string f2 frase iniziale da stampare per il secondo valore
+# @param    bool se_percentuale indica se il valore è una percentuale oppure no
 # @return   N/A
 def stampa_due_valori(f_iniz, d1, v1, f1, d2, v2, f2, se_percentuale):
     print(f_iniz)
@@ -388,17 +403,22 @@ def stampa_due_valori(f_iniz, d1, v1, f1, d2, v2, f2, se_percentuale):
 
 # Calcola i dati interessanti, stampa i dati interessanti di oggi e di
 # una settimana fa e poi traccia un grafico dei dati negli ultimi 30 giorni
-# @desc     TODO
-# @param    TODO
-# @param    TODO
-# @param    TODO
+# @desc     Calcola alcuni dati cumulativi sugli ultimi gg_cum giorni per una 
+#           popolazione di pop_rel persone
+# @param    list dati TODO
+# @param    string regionName TODO
+# @param    float tot_pop TODO
+# @param    int id_grafico TODO
+# @param    int pop_rel popolazione relativa sui quali calcolare i valori
+# @param    int gg_cum giorni cumulativi sui quali calcolare i valori
+# @param    int gg_trac ultimi giorni di dati da tracciare sul grafico
 # @return   TODO
 # TODO: Cambiare funzione in italiano e commentare
 def calcoli_e_stampe(dati, regionName, tot_pop, id_grafico, pop_rel = 100000.0,
                      gg_cum = 7, gg_trac = 30):
     # Prima stampa per distinguere Italia e regioni
     print("------------------%s------------------" % regionName)
-
+    print('\nNota: I seguenti valori sono per %.0f persone\n' % pop_rel)
     dati_calcolati = calcoli(dati, tot_pop, gg_cum, pop_rel)
 
     # Indici di oggi e di una settimana fa'
