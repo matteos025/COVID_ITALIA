@@ -5,18 +5,27 @@ from datetime import datetime, timedelta
 import math
 import os
 import enum
+import sys
 
-# Popolazione italiana a fine Maggio
-TOT_POP_IT = 60062012.0
-
-# Popolazione lombarda a fine Maggio
-TOT_POP_LOM = 10067773.0
+# Popolazione italiana a Gennaio 2020
+TOT_POP_IT = 60244639.0
 
 # Indici mappati ai relativi mesi
-MONTHS = {1 : "Gennaio", 2 : "Febbraio", 3 : "Marzo", 4 : "Aprile", 
-          5 : "Maggio", 6 : "Giugno", 7 : "Luglio", 8 : "Agosto", 
-          9 : "Settembre", 10 : "Ottobre", 11 : "Novembre", 
-          12 : "Dicembre"};
+MONTHS = {1: "Gennaio", 2: "Febbraio", 3: "Marzo", 4: "Aprile", 
+          5: "Maggio", 6: "Giugno", 7: "Luglio", 8: "Agosto", 
+          9: "Settembre", 10: "Ottobre", 11: "Novembre", 
+          12: "Dicembre"};
+
+POP_REGIONI = {"Abruzzo": 1305770.0, "Basilicata": 556934.0, 
+               "Calabria": 1924701.0, "Campania": 5785861.0, 
+               "Emilia-Romagna": 4467118.0, "Friuli Venezia Giulia": 1211357.0,
+               "Lazio": 5865544.0, "Liguria": 1543127.0,
+               "Lombardia": 10103969.0, "Marche": 1518400.0, "Molise": 302265.0,
+               "P.A. Bolzano": 5234.0, "P.A. Trento": 542739.0,
+               "Piemonte": 4341375.0, "Puglia": 4008296.0,
+               "Sardegna": 1630474.0, "Sicilia": 4968410.0,
+               "Toscana": 3722729.0, "Umbria": 880285.0,
+               "Valle d'Aosta": 125501.0, "Veneto": 4907704.0}
 
 # Directory di questo file
 __location__ = os.path.realpath(os.path.join(os.getcwd(), \
@@ -492,6 +501,8 @@ def calcoli_e_stampe(dati, regionName, tot_pop, id_grafico, pop_rel = 100000.0,
         "   \u2022 OGGI", data_sett_fa, n_ti_week_ago, 
         "   \u2022 SETTIMANA FA", False)
 
+    print("")
+
     # Creare liste da JSON per plottare grafici
     date = []
     n_pos_7d = []
@@ -519,22 +530,32 @@ def calcoli_e_stampe(dati, regionName, tot_pop, id_grafico, pop_rel = 100000.0,
 
 
 if __name__ == "__main__":
-    dati_it = caric_dati_it()
-    dati_reg = caric_dati_reg()
+    if len(sys.argv) < 2:
+        print('Accetta come argomenti Italia e qualsiasi regione')
 
-    # TODO: Per calcolare e stampare più regioni bisognerebbe
-    # che questa fosse una lista di stringhe di nomi di regione
-    reg1 = 'Italia'
-    reg2 = 'Lombardia'
+    else:
+        id = 1
+        for arg in sys.argv[1:]:
+            
+            dati_json = []
+            arg_cap = arg.title()
+            pop = 0
+            
+            if arg_cap == 'Italia':
+                dati = caric_dati_it()
+                dati_json = lett_dati_it(dati)
+                pop = TOT_POP_IT
+            elif arg_cap in POP_REGIONI:
+                dati = caric_dati_reg()
+                dati_json = lett_dati_reg(dati, arg_cap)
+                pop = POP_REGIONI[arg_cap]
+            else:
+                print(arg + ' non è una regione')
+                exit()
 
-    dati_json_it = lett_dati_it(dati_it)
-    dati_json_lom = lett_dati_reg(dati_reg, reg2)
-    
-    pop_rel = 100000.0
-    gg_cum = 7
+            calcoli_e_stampe(dati_json, arg.upper(), pop, id)
+            
+            id += 1
 
-    calcoli_e_stampe(dati_json_it, reg1.upper(), TOT_POP_IT, 1)
-    calcoli_e_stampe(dati_json_lom, reg2.upper(), TOT_POP_LOM, 2)
-    
-    plt.show()
+        plt.show()
 
