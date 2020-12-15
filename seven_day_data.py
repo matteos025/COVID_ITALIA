@@ -27,6 +27,19 @@ POP_REGIONI = {"Abruzzo": 1305770.0, "Basilicata": 556934.0,
                "Toscana": 3722729.0, "Umbria": 880285.0,
                "Valle d'Aosta": 125501.0, "Veneto": 4907704.0}
 
+REG_LOW_JSON = {"abruzzo": "Abruzzo", "basilicata": "Basilicata", 
+                "calabria": "Calabria", "campania": "Campania", 
+                "emilia-romagna": "Emilia-Romagna", 
+                "friuli venezia giulia": "Friuli Venezia Giulia", 
+                "lazio": "Lazio", "liguria": "Liguria", 
+                "lombardia": "Lombardia", "marche": "Marche", 
+                "molise": "Molise",
+                "p.a. bolzano": "P.A. Bolzano", "p.a. trento": "P.A. Trento",
+                "piemonte": "Piemonte", "puglia": "Puglia", 
+                "sardegna": "Sardegna", "sicilia": "Sicilia",
+                "toscana": "Toscana", "umbria": "Umbria",
+                "valle d'aosta": "Valle d'Aosta", "veneto": "Veneto"}
+
 # Directory di questo file
 __location__ = os.path.realpath(os.path.join(os.getcwd(), \
                                 os.path.dirname(__file__)))
@@ -538,20 +551,22 @@ if __name__ == "__main__":
         for arg in sys.argv[1:]:
             
             dati_json = []
-            arg_cap = arg.title()
+            arg_lower = arg.lower()
             pop = 0
             
-            if arg_cap == 'Italia':
+            if arg_lower == 'italia':
                 dati = caric_dati_it()
                 dati_json = lett_dati_it(dati)
                 pop = TOT_POP_IT
-            elif arg_cap in POP_REGIONI:
-                dati = caric_dati_reg()
-                dati_json = lett_dati_reg(dati, arg_cap)
-                pop = POP_REGIONI[arg_cap]
             else:
-                print(arg + ' non è una regione')
-                exit()
+                arg_json = REG_LOW_JSON[arg_lower]
+                if arg_json in POP_REGIONI:
+                    dati = caric_dati_reg()
+                    dati_json = lett_dati_reg(dati, arg_json)
+                    pop = POP_REGIONI[arg_json]
+                else:
+                    print(arg + ' non è una regione')
+                    exit()
 
             calcoli_e_stampe(dati_json, arg.upper(), pop, id)
             
