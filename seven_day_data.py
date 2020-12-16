@@ -280,8 +280,8 @@ def stampa_valore(data, val, str_iniz, se_percentuale):
     mese_str = MONTHS[mese_int]
 
     # Formulazione della stringa da stampare
-    str_da_stamp = str_iniz + " " + giorno + " " + mese_str \
-                   + ": %.2f" % val
+    str_da_stamp = str_iniz + " " + giorno + " " + mese_str + ": " \
+                            + f'{round(val, 2):,}'
 
     # Aggiunta del carattere percentuale
     if se_percentuale:
@@ -440,7 +440,8 @@ def calcoli_e_stampe(dati, regionName, tot_pop, id_grafico, pop_rel = 100000.0,
                      gg_cum = 7, gg_trac = 30):
     # Prima stampa per distinguere Italia e regioni
     print("------------------%s------------------" % regionName)
-    print('\nNota: I seguenti valori sono per %.0f persone\n' % pop_rel)
+    print('\nNota: I seguenti valori sono per ' f'{int(pop_rel):,}' 
+          ' persone\n')
     dati_calcolati = calcoli(dati, tot_pop, gg_cum, pop_rel)
 
     # Indici di oggi e di una settimana fa'
