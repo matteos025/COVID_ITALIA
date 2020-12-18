@@ -66,17 +66,19 @@ def caric_dati_reg():
 
 
 # @desc     lettura e potenziale calcolo di dati nazionali riguardanti nuovi 
-#           positivi, nuovi casi testati, nuovi tamponi effettuati ed 
-#           ingressi in terapia intensiva
+#           positivi, nuovi casi testati, nuovi tamponi effettuati, 
+#           ingressi in terapia intensiva e nuovi decessi
 # @param    list dati dati nazionali giornalieri caricati
 # @return   list dizionari contenenti i dati nazionali giornalieri
 def lett_dati_it(dati):
     # Lista di dizionari, poi ritornata dalla funzione
     dati_calcolati = []
 
-    # Variabili per calcolare i nuovi casi testati e i nuovi tamponi
+    # Variabili per calcolare i nuovi casi testati, i nuovi tamponi ed i nuovi
+    # morti
     tot_c_ieri = 0
     tot_t_ieri = 0
+    tot_m_ieri = 0
 
     # Aggiunta dei dati alle liste per ogni data disponibile
     # Nota: I nuovi casi testati ed i nuovi tamponi effettuati non
@@ -84,6 +86,7 @@ def lett_dati_it(dati):
     for dato in dati:
         tot_c_oggi = dato['casi_testati']
         tot_t_oggi = dato['tamponi']
+        tot_m_oggi = dato['deceduti']
 
         # Si prendono i dati da quando inizia ad essere fornito il
         # dato sui casi testati (fine Aprile)
@@ -92,6 +95,7 @@ def lett_dati_it(dati):
             # effettuati
             nuovi_c = tot_c_oggi - tot_c_ieri
             nuovi_t = tot_t_oggi - tot_t_ieri
+            nuovi_m = tot_m_oggi - tot_m_ieri
             
             # Dato fornito a partire dal 4 Dicembre
             entrate_ti = 0
@@ -101,11 +105,12 @@ def lett_dati_it(dati):
 
             # Dizionario con i dati che ci interessano
             dato = {
-                'data' : dato['data'][5:10],
-                'nuovi_positivi' : dato['nuovi_positivi'],
-                'nuovi_casi_testati' : nuovi_c,
-                'nuovi_tamponi' : nuovi_t,
-                'entrate_ti' : entrate_ti
+                'data': dato['data'][5:10],
+                'nuovi_positivi': dato['nuovi_positivi'],
+                'nuovi_casi_testati': nuovi_c,
+                'nuovi_tamponi': nuovi_t,
+                'entrate_ti': entrate_ti,
+                'nuovi_morti': nuovi_m
             }
 
             dati_calcolati.append(dato)
@@ -113,13 +118,14 @@ def lett_dati_it(dati):
             # Aggiornamento valori
             tot_c_ieri = tot_c_oggi
             tot_t_ieri = tot_t_oggi
+            tot_m_ieri = tot_m_oggi
 
     return dati_calcolati
 
 
 # @desc     lettura e potenziale calcolo di dati di una regione riguardanti 
-#           nuovi positivi, nuovi casi testati, nuovi tamponi effettuati ed 
-#           ingressi in terapia intensiva
+#           nuovi positivi, nuovi casi testati, nuovi tamponi effettuati, 
+#           ingressi in terapia intensiva e nuovi decessi
 # @param    list dati dati nazionali giornalieri caricati
 # @param    string regione la regione i cui dati ritornare
 # @return   list dizionari contenenti i dati nazionali giornalieri
@@ -127,9 +133,11 @@ def lett_dati_reg(dati, regione):
     # Lista di dizionari, poi ritornata dalla funzione
     dati_calcolati = []
 
-    # Variabili per calcolare i nuovi casi testati e i nuovi tamponi
+    # Variabili per calcolare i nuovi casi testati, i nuovi tamponi ed i nuovi
+    # morti
     tot_c_ieri = 0
     tot_t_ieri = 0
+    tot_m_ieri = 0
 
     # Aggiunta dei dati alle liste per ogni data disponibile
     # Nota: I nuovi casi testati ed i nuovi tamponi effettuati non
@@ -140,14 +148,16 @@ def lett_dati_reg(dati, regione):
         if dato['denominazione_regione'] == regione:
             tot_c_oggi = dato['casi_testati']
             tot_t_oggi = dato['tamponi']
+            tot_m_oggi = dato['deceduti']
 
             # Si prendono i dati da quando inizia ad essere fornito il
             # dato sui casi testati (fine Aprile)
             if tot_c_oggi != None :
                 # Calcolo dei nuovi casi testati e dei tamponi
                 # effettuati
-                nuovi_casi_testati_oggi = tot_c_oggi - tot_c_ieri
-                nuovi_tamponi_oggi = tot_t_oggi - tot_t_ieri
+                nuovi_c = tot_c_oggi - tot_c_ieri
+                nuovi_t = tot_t_oggi - tot_t_ieri
+                nuovi_m = tot_m_oggi - tot_m_ieri
                 
                 # Dato fornito a partire dal 4 Dicembre
                 entrate_ti = 0
@@ -159,9 +169,10 @@ def lett_dati_reg(dati, regione):
                 dato = {
                     'data' : dato['data'][5:10],
                     'nuovi_positivi' : dato['nuovi_positivi'],
-                    'nuovi_casi_testati' : nuovi_casi_testati_oggi,
-                    'nuovi_tamponi' : nuovi_tamponi_oggi,
-                    'entrate_ti' : entrate_ti
+                    'nuovi_casi_testati' : nuovi_c,
+                    'nuovi_tamponi' : nuovi_t,
+                    'entrate_ti' : entrate_ti,
+                    'nuovi_morti': nuovi_m
                 }
 
                 dati_calcolati.append(dato)
@@ -169,6 +180,7 @@ def lett_dati_reg(dati, regione):
                 # Aggiornamento valori
                 tot_c_ieri = tot_c_oggi
                 tot_t_ieri = tot_t_oggi
+                tot_m_ieri = tot_m_oggi
 
     return dati_calcolati
 
@@ -192,13 +204,16 @@ def calcoli(dati, tot_pop, gg, rel_pop):
     tot_nuovi_c = 0
     tot_nuovi_t = 0
     tot_entrate_ti = 0
+    tot_nuovi_m = 0
 
     # Calcolo del primo valore per ciascuno dei dati
     for i in range(0, 7):
-        tot_nuovi_p += dati[i]['nuovi_positivi']
-        tot_nuovi_c += dati[i]['nuovi_casi_testati']
-        tot_nuovi_t += dati[i]['nuovi_tamponi']
-        tot_entrate_ti += dati[i]['entrate_ti']
+        dati_i = dati[i]
+        tot_nuovi_p += dati_i['nuovi_positivi']
+        tot_nuovi_c += dati_i['nuovi_casi_testati']
+        tot_nuovi_t += dati_i['nuovi_tamponi']
+        tot_entrate_ti += dati_i['entrate_ti']
+        tot_nuovi_m += dati_i['nuovi_morti']
 
     # Calcolo e aggiornamento della lista dati_calcolati
     for i in range(7, len(dati)):
@@ -209,6 +224,7 @@ def calcoli(dati, tot_pop, gg, rel_pop):
         n_pos_per_c_today = tot_nuovi_p * 100.0 / tot_nuovi_c
         n_pos_per_t_today = tot_nuovi_p * 100.0 / tot_nuovi_t
         entry_ic_today = tot_entrate_ti * rel_pop / tot_pop
+        n_morti_7gg = tot_nuovi_m * rel_pop / tot_pop
 
         # Dizionario con i dati che ci interessano
         dato_calcolato = {
@@ -218,20 +234,23 @@ def calcoli(dati, tot_pop, gg, rel_pop):
             'nuovi_tamponi_7gg': test_7_days_today,
             'nuovi_pos_per_casi_7gg': n_pos_per_c_today,
             'nuovi_pos_per_test_7gg': n_pos_per_t_today,
-            'nuove_entrate_ti_7gg' : entry_ic_today
+            'nuove_entrate_ti_7gg': entry_ic_today,
+            'nuovi_morti_7gg': n_morti_7gg
         }
 
         dati_calcolati.append(dato_calcolato)
 
+        dati_oggi = dati[i]
+        dati_sett_fa = dati[i - 7]
         # Aggiornamento di tutti i valori
-        tot_nuovi_p += dati[i]['nuovi_positivi'] \
-            - dati[i - 7]['nuovi_positivi']
-        tot_nuovi_c += dati[i]['nuovi_casi_testati'] \
-            - dati[i - 7]['nuovi_casi_testati']
-        tot_nuovi_t += dati[i]['nuovi_tamponi'] \
-            - dati[i - 7]['nuovi_tamponi']
-        tot_entrate_ti += dati[i]['entrate_ti'] \
-            - dati[i - 7]['entrate_ti']
+        tot_nuovi_p += dati_oggi['nuovi_positivi'] \
+            - dati_sett_fa['nuovi_positivi']
+        tot_nuovi_c += dati_oggi['nuovi_casi_testati'] \
+            - dati_sett_fa['nuovi_casi_testati']
+        tot_nuovi_t += dati_oggi['nuovi_tamponi'] \
+            - dati_sett_fa['nuovi_tamponi']
+        tot_entrate_ti += dati_oggi['entrate_ti'] - dati_sett_fa['entrate_ti']
+        tot_nuovi_m += dati_oggi['nuovi_morti'] - dati_sett_fa['nuovi_morti']
     
     # Calcolo dell'ultimo valore
     n_pos_7gg = tot_nuovi_p * rel_pop / tot_pop
@@ -240,6 +259,7 @@ def calcoli(dati, tot_pop, gg, rel_pop):
     n_pos_per_c_today = tot_nuovi_p * 100.0 / tot_nuovi_c
     n_pos_per_t_today = tot_nuovi_p * 100.0 / tot_nuovi_t
     entry_ic_today = tot_entrate_ti * rel_pop / tot_pop
+    n_morti_7gg = tot_nuovi_m * rel_pop / tot_pop
 
     # Dizionario con i dati che ci interessano
     dato_calcolato = {
@@ -249,7 +269,8 @@ def calcoli(dati, tot_pop, gg, rel_pop):
         'nuovi_tamponi_7gg': test_7_days_today,
         'nuovi_pos_per_casi_7gg': n_pos_per_c_today,
         'nuovi_pos_per_test_7gg': n_pos_per_t_today,
-        'nuove_entrate_ti_7gg' : entry_ic_today
+        'nuove_entrate_ti_7gg': entry_ic_today,
+        'nuovi_morti_7gg': n_morti_7gg
     }
 
     dati_calcolati.append(dato_calcolato)
@@ -336,7 +357,8 @@ def print_expected_20(num_day_avg, avg_n_pos, avg_diff):
 # @return   TODO
 # TODO: Cambiare funzione in italiano e commentare
 def traccia_ultimi_giorni(days, dates, n_pos_7d, new_c_7d, new_t_7d, \
-                          n_pos_per_c, n_pos_per_t, n_ti_7d, id, regione):
+                          n_pos_per_c, n_pos_per_t, n_ti_7d, n_mor_7gg, id, 
+                          regione):
     start_date = len(dates) - days
 
     plt.figure(id)
@@ -359,6 +381,9 @@ def traccia_ultimi_giorni(days, dates, n_pos_7d, new_c_7d, new_t_7d, \
 
     linea_entrate_ti_7d, = plt.plot(dates[start_date:], n_ti_7d[start_date:])
     linea_entrate_ti_7d.set_label('Entrate in terapia intensiva / 100')
+
+    linea_nuovi_mor, = plt.plot(dates[start_date:], n_mor_7gg[start_date:])
+    linea_nuovi_mor.set_label('Nuovi morti / 10')
 
     plt.xticks(np.arange(0, days, step=2))
     plt.xlabel('Date')
@@ -515,6 +540,16 @@ def calcoli_e_stampe(dati, regionName, tot_pop, id_grafico, pop_rel = 100000.0,
         "   \u2022 OGGI", data_sett_fa, n_ti_week_ago, 
         "   \u2022 SETTIMANA FA", False)
 
+    # Today's new deaths per population over last 7 days
+    n_m_oggi = dati_calcolati[indice_oggi]['nuovi_morti_7gg']
+    # Week ago's new deaths per population over last 7 days
+    n_m_sett_fa = dati_calcolati[indice_sett_fa]['nuovi_morti_7gg']
+
+    frase_iniziale = "\nNuovi morti ultimi 7 giorni:"
+    stampa_due_valori(frase_iniziale, data_oggi, n_m_oggi, 
+        "   \u2022 OGGI", data_sett_fa, n_m_sett_fa, 
+        "   \u2022 SETTIMANA FA", False)
+
     print("")
 
     # Creare liste da JSON per plottare grafici
@@ -525,22 +560,21 @@ def calcoli_e_stampe(dati, regionName, tot_pop, id_grafico, pop_rel = 100000.0,
     n_pos_per_c = []
     n_pos_per_t = []
     n_ti_7d = []
+    n_m_7gg = []
     
     for i in range(0, len(dati_calcolati)):
-        date.append(dati_calcolati[i]['data'])
-        n_pos_7d.append(dati_calcolati[i]['nuovi_pos_7gg'])
-        new_c_7d.append(
-            dati_calcolati[i]['nuovi_casi_test_7gg'] / 10.0)
-        new_t_7d.append(dati_calcolati[i]['nuovi_tamponi_7gg'] / 10.0)
-        n_pos_per_c.append(
-            dati_calcolati[i]['nuovi_pos_per_casi_7gg'] * 10.0)
-        n_pos_per_t.append(
-            dati_calcolati[i]['nuovi_pos_per_test_7gg'] * 10.0)
-        n_ti_7d.append(
-            dati_calcolati[i]['nuove_entrate_ti_7gg'] * 100.0)
+        dati_i = dati_calcolati[i]
+        date.append(dati_i['data'])
+        n_pos_7d.append(dati_i['nuovi_pos_7gg'])
+        new_c_7d.append(dati_i['nuovi_casi_test_7gg'] / 10.0)
+        new_t_7d.append(dati_i['nuovi_tamponi_7gg'] / 10.0)
+        n_pos_per_c.append(dati_i['nuovi_pos_per_casi_7gg'] * 10.0)
+        n_pos_per_t.append(dati_i['nuovi_pos_per_test_7gg'] * 10.0)
+        n_ti_7d.append(dati_i['nuove_entrate_ti_7gg'] * 100.0)
+        n_m_7gg.append(dati_i['nuovi_morti_7gg'] * 10.0)
     
     traccia_ultimi_giorni(gg_trac, date, n_pos_7d, new_c_7d, new_t_7d, \
-        n_pos_per_c, n_pos_per_t, n_ti_7d, id_grafico, regionName)
+        n_pos_per_c, n_pos_per_t, n_ti_7d, n_m_7gg, id_grafico, regionName)
 
 
 if __name__ == "__main__":
