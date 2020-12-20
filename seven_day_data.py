@@ -465,8 +465,8 @@ def calcoli_e_stampe(dati, regionName, tot_pop, id_grafico, pop_rel = 100000.0,
                      gg_cum = 7, gg_trac = 30):
     # Prima stampa per distinguere Italia e regioni
     print("------------------%s------------------" % regionName)
-    print('\nNota: I seguenti valori sono per ' f'{int(pop_rel):,}' 
-          ' persone\n')
+    print('\nNota: I seguenti valori sono cumulativi sugli ultimi %d giorni e ' 
+        'sono per ' f'{int(pop_rel):,} persone\n' % gg_cum)
     dati_calcolati = calcoli(dati, tot_pop, gg_cum, pop_rel)
 
     # Indici di oggi e di una settimana fa'
@@ -482,7 +482,7 @@ def calcoli_e_stampe(dati, regionName, tot_pop, id_grafico, pop_rel = 100000.0,
     # A week ago's new positives in last 7 days
     n_pos_7d_week_ago = dati_calcolati[indice_sett_fa]['nuovi_pos_7gg']
     
-    frase_iniziale = "Nuovi positivi ultimi 7 giorni:"
+    frase_iniziale = "Nuovi positivi:"
     stampa_due_valori(frase_iniziale, data_oggi, n_pos_7d_today, 
         "   \u2022 OGGI", data_sett_fa, n_pos_7d_week_ago, 
         "   \u2022 SETTIMANA FA", False)
@@ -493,7 +493,7 @@ def calcoli_e_stampe(dati, regionName, tot_pop, id_grafico, pop_rel = 100000.0,
     n_pos_per_c_week_ago = \
         dati_calcolati[indice_sett_fa]['nuovi_pos_per_casi_7gg']
 
-    frase_iniziale = "\nPositivi per casi testati ultimi 7 giorni:"
+    frase_iniziale = "\nNuovi positivi per nuovi casi testati:"
     stampa_due_valori(frase_iniziale, data_oggi, n_pos_per_c_today, 
         "   \u2022 OGGI", data_sett_fa, n_pos_per_c_week_ago, 
         "   \u2022 SETTIMANA FA", True)
@@ -504,7 +504,7 @@ def calcoli_e_stampe(dati, regionName, tot_pop, id_grafico, pop_rel = 100000.0,
     n_pos_per_t_week_ago = \
         dati_calcolati[indice_sett_fa]['nuovi_pos_per_test_7gg']
 
-    frase_iniziale = "\nPositivi per tamponi ultimi 7 giorni:"
+    frase_iniziale = "\nNuovi positivi per nuovi tamponi:"
     stampa_due_valori(frase_iniziale, data_oggi, n_pos_per_t_today, 
         "   \u2022 OGGI", data_sett_fa, n_pos_per_t_week_ago, 
         "   \u2022 SETTIMANA FA", True)
@@ -515,7 +515,7 @@ def calcoli_e_stampe(dati, regionName, tot_pop, id_grafico, pop_rel = 100000.0,
     n_c_week_ago = \
         dati_calcolati[indice_sett_fa]['nuovi_casi_test_7gg']
 
-    frase_iniziale = "\nCasi testati ultimi 7 giorni:"
+    frase_iniziale = "\nNuovi casi testati:"
     stampa_due_valori(frase_iniziale, data_oggi, n_c_today, 
         "   \u2022 OGGI", data_sett_fa, n_c_week_ago, 
         "   \u2022 SETTIMANA FA", False)
@@ -525,7 +525,7 @@ def calcoli_e_stampe(dati, regionName, tot_pop, id_grafico, pop_rel = 100000.0,
     # Week ago's tests per population over last 7 days
     n_t_week_ago = dati_calcolati[indice_sett_fa]['nuovi_tamponi_7gg']
 
-    frase_iniziale = "\nTamponi ultimi 7 giorni:"
+    frase_iniziale = "\nNuovi tamponi:"
     stampa_due_valori(frase_iniziale, data_oggi, n_t_today, 
         "   \u2022 OGGI", data_sett_fa, n_t_week_ago, 
         "   \u2022 SETTIMANA FA", False)
@@ -535,7 +535,7 @@ def calcoli_e_stampe(dati, regionName, tot_pop, id_grafico, pop_rel = 100000.0,
     # Week ago's entries in intensive care per population over last 7 days
     n_ti_week_ago = dati_calcolati[indice_sett_fa]['nuove_entrate_ti_7gg']
 
-    frase_iniziale = "\nIngressi in terapia intensiva ultimi 7 giorni:"
+    frase_iniziale = "\nIngressi in terapia intensiva:"
     stampa_due_valori(frase_iniziale, data_oggi, n_ti_today, 
         "   \u2022 OGGI", data_sett_fa, n_ti_week_ago, 
         "   \u2022 SETTIMANA FA", False)
@@ -545,7 +545,7 @@ def calcoli_e_stampe(dati, regionName, tot_pop, id_grafico, pop_rel = 100000.0,
     # Week ago's new deaths per population over last 7 days
     n_m_sett_fa = dati_calcolati[indice_sett_fa]['nuovi_morti_7gg']
 
-    frase_iniziale = "\nNuovi morti ultimi 7 giorni:"
+    frase_iniziale = "\nNuovi morti:"
     stampa_due_valori(frase_iniziale, data_oggi, n_m_oggi, 
         "   \u2022 OGGI", data_sett_fa, n_m_sett_fa, 
         "   \u2022 SETTIMANA FA", False)
