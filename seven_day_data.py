@@ -96,24 +96,28 @@ def lett_dati_it(dati):
             nuovi_c = tot_c_oggi - tot_c_ieri
             nuovi_t = tot_t_oggi - tot_t_ieri
             nuovi_m = tot_m_oggi - tot_m_ieri
-            
-            # Dato fornito a partire dal 4 Dicembre
-            entrate_ti = 0
-            if (('ingressi_terapia_intensiva' in dato) and 
-                    (dato['ingressi_terapia_intensiva'] != None)):
-                entrate_ti = dato['ingressi_terapia_intensiva']
 
             # Dizionario con i dati che ci interessano
-            dato = {
+            n_dato = {
                 'data': dato['data'][5:10],
                 'nuovi_positivi': dato['nuovi_positivi'],
-                'nuovi_casi_testati': nuovi_c,
-                'nuovi_tamponi': nuovi_t,
-                'entrate_ti': entrate_ti,
-                'nuovi_morti': nuovi_m
             }
 
-            dati_calcolati.append(dato)
+            # Soluzione al problema dei dati che cumulativi che diminuiscono
+            if nuovi_c > -1:
+                n_dato['nuovi_casi_testati'] = nuovi_c
+
+            if nuovi_t > -1:
+                n_dato['nuovi_tamponi'] = nuovi_t
+
+            if (('ingressi_terapia_intensiva' in dato) and 
+                (dato['ingressi_terapia_intensiva'] != None)):
+                n_dato['entrate_ti'] = dato['ingressi_terapia_intensiva']
+
+            if nuovi_m > -1:
+                n_dato['nuovi_morti'] = nuovi_m
+
+            dati_calcolati.append(n_dato)
 
             # Aggiornamento valori
             tot_c_ieri = tot_c_oggi
@@ -158,24 +162,28 @@ def lett_dati_reg(dati, regione):
                 nuovi_c = tot_c_oggi - tot_c_ieri
                 nuovi_t = tot_t_oggi - tot_t_ieri
                 nuovi_m = tot_m_oggi - tot_m_ieri
-                
-                # Dato fornito a partire dal 4 Dicembre
-                entrate_ti = 0
-                if (('ingressi_terapia_intensiva' in dato) and 
-                        (dato['ingressi_terapia_intensiva'] != None)):
-                    entrate_ti = dato['ingressi_terapia_intensiva']
 
                 # Dizionario con i dati che ci interessano
-                dato = {
+                n_dato = {
                     'data' : dato['data'][5:10],
-                    'nuovi_positivi' : dato['nuovi_positivi'],
-                    'nuovi_casi_testati' : nuovi_c,
-                    'nuovi_tamponi' : nuovi_t,
-                    'entrate_ti' : entrate_ti,
-                    'nuovi_morti': nuovi_m
+                    'nuovi_positivi' : dato['nuovi_positivi']
                 }
 
-                dati_calcolati.append(dato)
+                # Soluzione al problema dei dati che cumulativi che diminuiscono
+                if nuovi_c > -1:
+                    n_dato['nuovi_casi_testati'] = nuovi_c
+
+                if nuovi_t > -1:
+                    n_dato['nuovi_tamponi'] = nuovi_t
+
+                if (('ingressi_terapia_intensiva' in dato) and 
+                    (dato['ingressi_terapia_intensiva'] != None)):
+                    n_dato['entrate_ti'] = dato['ingressi_terapia_intensiva']
+
+                if nuovi_m > -1:
+                    n_dato['nuovi_morti'] = nuovi_m
+
+                dati_calcolati.append(n_dato)
 
                 # Aggiornamento valori
                 tot_c_ieri = tot_c_oggi
@@ -210,10 +218,14 @@ def calcoli(dati, tot_pop, gg, rel_pop):
     for i in range(0, 7):
         dati_i = dati[i]
         tot_nuovi_p += dati_i['nuovi_positivi']
-        tot_nuovi_c += dati_i['nuovi_casi_testati']
-        tot_nuovi_t += dati_i['nuovi_tamponi']
-        tot_entrate_ti += dati_i['entrate_ti']
-        tot_nuovi_m += dati_i['nuovi_morti']
+        if 'nuovi_casi_testati' in dati_i:
+            tot_nuovi_c += dati_i['nuovi_casi_testati']
+        if 'nuovi_tamponi' in dati_i:
+            tot_nuovi_t += dati_i['nuovi_tamponi']
+        if 'entrate_ti' in dati_i:
+            tot_entrate_ti += dati_i['entrate_ti']
+        if 'nuovi_morti' in dati_i:
+            tot_nuovi_m += dati_i['nuovi_morti']
 
     # Calcolo e aggiornamento della lista dati_calcolati
     for i in range(7, len(dati)):
@@ -245,12 +257,26 @@ def calcoli(dati, tot_pop, gg, rel_pop):
         # Aggiornamento di tutti i valori
         tot_nuovi_p += dati_oggi['nuovi_positivi'] \
             - dati_sett_fa['nuovi_positivi']
-        tot_nuovi_c += dati_oggi['nuovi_casi_testati'] \
-            - dati_sett_fa['nuovi_casi_testati']
-        tot_nuovi_t += dati_oggi['nuovi_tamponi'] \
-            - dati_sett_fa['nuovi_tamponi']
-        tot_entrate_ti += dati_oggi['entrate_ti'] - dati_sett_fa['entrate_ti']
-        tot_nuovi_m += dati_oggi['nuovi_morti'] - dati_sett_fa['nuovi_morti']
+        
+        if 'nuovi_casi_testati' in dati_oggi:
+            tot_nuovi_c += dati_oggi['nuovi_casi_testati']
+        if 'nuovi_casi_testati' in dati_sett_fa:
+            tot_nuovi_c -= dati_sett_fa['nuovi_casi_testati']
+        
+        if 'nuovi_tamponi' in dati_oggi:
+            tot_nuovi_t += dati_oggi['nuovi_tamponi']
+        if 'nuovi_tamponi' in dati_sett_fa:
+            tot_nuovi_t -= dati_sett_fa['nuovi_tamponi']
+        
+        if 'entrate_ti' in dati_oggi:
+            tot_entrate_ti += dati_oggi['entrate_ti']
+        if 'entrate_ti' in dati_sett_fa:
+            tot_entrate_ti -= dati_sett_fa['entrate_ti']
+        
+        if 'nuovi_morti' in dati_oggi:
+            tot_nuovi_m += dati_oggi['nuovi_morti']
+        if 'nuovi_morti' in dati_sett_fa:
+            tot_nuovi_m -= dati_sett_fa['nuovi_morti']
     
     # Calcolo dell'ultimo valore
     n_pos_7gg = tot_nuovi_p * rel_pop / tot_pop
