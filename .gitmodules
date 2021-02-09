@@ -1,3 +1,6 @@
-[submodule "COVID-19"]
-	path = COVID-19
+[submodule "COVID-DATI"]
+	path = COVID-DATI
 	url = https://github.com/pcm-dpc/COVID-19.git
+[submodule "COVID-VACCINI"]
+	path = COVID-VACCINI
+	url = https://github.com/italia/covid19-opendata-vaccini.git

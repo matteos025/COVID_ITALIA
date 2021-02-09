@@ -51,7 +51,7 @@ __location__ = os.path.realpath(os.path.join(os.getcwd(), \
 # @return   lista di dizionari contenenti i dati nazionali giornalieri
 def caric_dati_it():
     json_file = open(os.path.join(__location__,
-        'COVID-19/dati-json/dpc-covid19-ita-andamento-nazionale.json'))
+        'COVID-DATI/dati-json/dpc-covid19-ita-andamento-nazionale.json'))
     data = json.load(json_file)
     return data
 
@@ -60,7 +60,7 @@ def caric_dati_it():
 #           della Protezione Civile
 # @return   lista di dizionari contenenti i dati nazionali giornalieri
 def caric_dati_reg():
-    json_file = open('COVID-19/dati-json/dpc-covid19-ita-regioni.json')
+    json_file = open('COVID-DATI/dati-json/dpc-covid19-ita-regioni.json')
     data = json.load(json_file)
     return data
 
