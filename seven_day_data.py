@@ -64,13 +64,35 @@ def caric_dati_reg():
     data = json.load(json_file)
     return data
 
+# @desc     caricamento dei dati di tutte le regioni italiane dalla repository 
+#           opendata
+# @return   lista di dizionari contenenti i dati regionali sui vaccini
+def caric_dati_vaccini():
+    json_file = open('COVID-VACCINI/dati/somministrazioni-vaccini-latest.json')
+    dati = json.load(json_file)
+
+    dati_parsati = {}
+
+    for dato in dati['data']:
+        data = dato['data_somministrazione'][5:10]
+        if data in dati_parsati:
+            dati_parsati[data]['prima_dose'] += dato['prima_dose']
+            dati_parsati[data]['seconda_dose'] += dato['seconda_dose']
+        else:
+            nuovo_dato = {
+                'prima_dose': dato['prima_dose'],
+                'seconda_dose': dato['seconda_dose']
+            }
+            dati_parsati[data] = nuovo_dato
+
+    return dati_parsati
 
 # @desc     lettura e potenziale calcolo di dati nazionali riguardanti nuovi 
 #           positivi, nuovi casi testati, nuovi tamponi effettuati, 
 #           ingressi in terapia intensiva e nuovi decessi
 # @param    list dati dati nazionali giornalieri caricati
 # @return   list dizionari contenenti i dati nazionali giornalieri
-def lett_dati_it(dati):
+def lett_dati_it(dati, dati_vaccini):
     # Lista di dizionari, poi ritornata dalla funzione
     dati_calcolati = []
 
@@ -79,6 +101,8 @@ def lett_dati_it(dati):
     tot_c_ieri = 0
     tot_t_ieri = 0
     tot_m_ieri = 0
+    tot_prima_dose = 0
+    tot_sec_dose = 0
 
     # Aggiunta dei dati alle liste per ogni data disponibile
     # Nota: I nuovi casi testati ed i nuovi tamponi effettuati non
@@ -97,10 +121,21 @@ def lett_dati_it(dati):
             nuovi_t = tot_t_oggi - tot_t_ieri
             nuovi_m = tot_m_oggi - tot_m_ieri
 
+            data = dato['data'][5:10]
+
+            if data in dati_vaccini:
+                prima_dose_oggi = dati_vaccini[data]['prima_dose']
+                sec_dose_oggi = dati_vaccini[data]['seconda_dose']
+
+                tot_prima_dose = tot_prima_dose + prima_dose_oggi
+                tot_sec_dose = tot_sec_dose + sec_dose_oggi
+
             # Dizionario con i dati che ci interessano
             n_dato = {
-                'data': dato['data'][5:10],
+                'data': data,
                 'nuovi_positivi': dato['nuovi_positivi'],
+                'tot_prima_dose': tot_prima_dose,
+                'tot_sec_dose': tot_sec_dose
             }
 
             # Soluzione al problema dei dati che cumulativi che diminuiscono
@@ -191,6 +226,12 @@ def lett_dati_reg(dati, regione):
                 tot_m_ieri = tot_m_oggi
 
     return dati_calcolati
+
+#def lett_dati_vacc_it(dati_vaccini):
+#    dati_calcolati = []
+#    for dato in dati_vaccini['data']:
+#        data = dato['data_somministrazione'][:10]
+#        print(data)
 
 
 # @desc     calcolo di nuovi positivi, nuovi casi testati, nuovi tamponi 
@@ -576,6 +617,29 @@ def calcoli_e_stampe(dati, regionName, tot_pop, id_grafico, pop_rel = 100000.0,
         "   \u2022 OGGI", data_sett_fa, n_m_sett_fa, 
         "   \u2022 SETTIMANA FA", False)
 
+    indice_oggi = len(dati) - 1
+    indice_sett_fa = len(dati) - 8
+
+    # Today's percentage of people vaccinated with first dose
+    n_p_v_oggi = dati[indice_oggi]['tot_prima_dose'] * 100 / tot_pop
+    # Week ago's percentage of people vaccinated with first dose
+    n_p_v_sett_fa = dati[indice_sett_fa]['tot_prima_dose'] * 100 / tot_pop
+
+    frase_iniziale = "\nTotale vaccinati prima dose:"
+    stampa_due_valori(frase_iniziale, data_oggi, n_p_v_oggi, 
+        "   \u2022 OGGI", data_sett_fa, n_p_v_sett_fa, 
+        "   \u2022 SETTIMANA FA", True)
+
+    # Today's percentage of people vaccinated with second dose
+    n_s_v_oggi = dati[indice_oggi]['tot_sec_dose'] * 100 / tot_pop
+    # Week ago's percentage of people vaccinated with second dose
+    n_s_v_sett_fa = dati[indice_sett_fa]['tot_sec_dose'] * 100 / tot_pop
+
+    frase_iniziale = "\nTotale vaccinati seconda dose:"
+    stampa_due_valori(frase_iniziale, data_oggi, n_s_v_oggi, 
+        "   \u2022 OGGI", data_sett_fa, n_s_v_sett_fa, 
+        "   \u2022 SETTIMANA FA", True)
+
     print("")
 
     # Creare liste da JSON per plottare grafici
@@ -617,7 +681,8 @@ if __name__ == "__main__":
             
             if arg_lower == 'italia':
                 dati = caric_dati_it()
-                dati_json = lett_dati_it(dati)
+                dati_vaccini = caric_dati_vaccini()
+                dati_json = lett_dati_it(dati, dati_vaccini)
                 pop = TOT_POP_IT
             else:
                 arg_json = REG_LOW_JSON[arg_lower]
