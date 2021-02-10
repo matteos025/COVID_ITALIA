@@ -16,29 +16,113 @@ MONTHS = {1: "Gennaio", 2: "Febbraio", 3: "Marzo", 4: "Aprile",
           9: "Settembre", 10: "Ottobre", 11: "Novembre", 
           12: "Dicembre"};
 
-POP_REGIONI = {"Abruzzo": 1305770.0, "Basilicata": 556934.0, 
-               "Calabria": 1924701.0, "Campania": 5785861.0, 
-               "Emilia-Romagna": 4467118.0, "Friuli Venezia Giulia": 1211357.0,
-               "Lazio": 5865544.0, "Liguria": 1543127.0,
-               "Lombardia": 10103969.0, "Marche": 1518400.0, "Molise": 302265.0,
-               "P.A. Bolzano": 5234.0, "P.A. Trento": 542739.0,
-               "Piemonte": 4341375.0, "Puglia": 4008296.0,
-               "Sardegna": 1630474.0, "Sicilia": 4968410.0,
-               "Toscana": 3722729.0, "Umbria": 880285.0,
-               "Valle d'Aosta": 125501.0, "Veneto": 4907704.0}
-
-REG_LOW_JSON = {"abruzzo": "Abruzzo", "basilicata": "Basilicata", 
-                "calabria": "Calabria", "campania": "Campania", 
-                "emilia-romagna": "Emilia-Romagna", 
-                "friuli venezia giulia": "Friuli Venezia Giulia", 
-                "lazio": "Lazio", "liguria": "Liguria", 
-                "lombardia": "Lombardia", "marche": "Marche", 
-                "molise": "Molise",
-                "p.a. bolzano": "P.A. Bolzano", "p.a. trento": "P.A. Trento",
-                "piemonte": "Piemonte", "puglia": "Puglia", 
-                "sardegna": "Sardegna", "sicilia": "Sicilia",
-                "toscana": "Toscana", "umbria": "Umbria",
-                "valle d'aosta": "Valle d'Aosta", "veneto": "Veneto"}
+INFO_REGIONI = {
+    "abruzzo": {
+        "nome_dato": "Abruzzo",
+        "pop": 1305770.0,
+        "area": "ABR"
+    },
+    "basilicata": {
+        "nome_dato": "Basilicata",
+        "pop": 556934.0,
+        "area": "BAS"
+    },
+    "calabria": {
+        "nome_dato": "Calabria",
+        "pop": 1924701.0,
+        "area": "CAL"
+    },
+    "campania": {
+        "nome_dato": "Campania",
+        "pop": 5785861.0,
+        "area": "CAM"
+    },
+    "emilia-romagna": {
+        "nome_dato": "Emilia-Romagna",
+        "pop": 4467118.0,
+        "area": "EMR"
+    },
+    "friuli venezia giulia": {
+        "nome_dato": "Friuli Venezia Giulia",
+        "pop": 1211357.0,
+        "area": "FVG"
+    },
+    "lazio": {
+        "nome_dato": "Lazio",
+        "pop": 5865544.0,
+        "area": "LAZ"
+    },
+    "liguria": {
+        "nome_dato": "Liguria",
+        "pop": 1543127.0,
+        "area": "LIG"
+    },
+    "lombardia": {
+        "nome_dato": "Lombardia",
+        "pop": 10103969.0,
+        "area": "LOM"
+    },
+    "marche": {
+        "nome_dato": "Marche",
+        "pop": 1518400.0,
+        "area": "MAR"
+    },
+    "molise": {
+        "nome_dato": "Molise",
+        "pop": 302265.0,
+        "area": "MOL"
+    },
+    "p.a. bolzano": {
+        "nome_dato": "P.A. Bolzano",
+        "pop": 5234.0,
+        "area": "PAB"
+    },
+    "p.a. trento": {
+        "nome_dato": "P.A. Trento",
+        "pop": 542739.0,
+        "area": "PAT"
+    },
+    "piemonte": {
+        "nome_dato": "Piemonte",
+        "pop": 4341375.0,
+        "area": "PIE"
+    },
+    "puglia": {
+        "nome_dato": "Puglia",
+        "pop": 4008296.0,
+        "area": "PUG"
+    },
+    "sardegna": {
+        "nome_dato": "Sardegna",
+        "pop": 1630474.0,
+        "area": "SAR"
+    },
+    "sicilia": {
+        "nome_dato": "Sicilia",
+        "pop": 4968410.0,
+        "area": "SIC"
+    },
+    "toscana": {
+        "nome_dato": "Toscana",
+        "pop": 3722729.0,
+        "area": "TOS"
+    },
+    "umbria": {
+        "nome_dato": "Umbria",
+        "pop": 880285.0,
+        "area": "UMB"
+    },
+    "valle d'aosta": {
+        "nome_dato": "Valle d'Aosta",
+        "pop": 125501.0,
+        "area": "VDA"
+    },
+    "veneto": {
+        "nome_dato": "Veneto",
+        "pop": 4907704.0,
+        "area": "VEN"
+    }
+}
 
 # Directory di questo file
 __location__ = os.path.realpath(os.path.join(os.getcwd(), \
@@ -67,7 +151,7 @@ def caric_dati_reg():
 # @desc     caricamento dei dati di tutte le regioni italiane dalla repository 
 #           opendata
 # @return   lista di dizionari contenenti i dati regionali sui vaccini
-def caric_dati_vaccini():
+def caric_dati_vaccini_it():
     json_file = open('COVID-VACCINI/dati/somministrazioni-vaccini-latest.json')
     dati = json.load(json_file)
 
@@ -86,6 +170,31 @@ def caric_dati_vaccini():
             dati_parsati[data] = nuovo_dato
 
     return dati_parsati
+
+
+def caric_dati_vaccini_reg(regione):
+    json_file = open('COVID-VACCINI/dati/somministrazioni-vaccini-latest.json')
+    dati = json.load(json_file)
+
+    area = INFO_REGIONI[regione]["area"]
+
+    dati_parsati = {}
+
+    for dato in dati['data']:
+        if dato["area"] == area:
+            data = dato['data_somministrazione'][5:10]
+            if data in dati_parsati:
+                dati_parsati[data]['prima_dose'] += dato['prima_dose']
+                dati_parsati[data]['seconda_dose'] += dato['seconda_dose']
+            else:
+                nuovo_dato = {
+                    'prima_dose': dato['prima_dose'],
+                    'seconda_dose': dato['seconda_dose']
+                }
+                dati_parsati[data] = nuovo_dato
+
+    return dati_parsati
+
 
 # @desc     lettura e potenziale calcolo di dati nazionali riguardanti nuovi 
 #           positivi, nuovi casi testati, nuovi tamponi effettuati, 
@@ -168,7 +277,7 @@ def lett_dati_it(dati, dati_vaccini):
 # @param    list dati dati nazionali giornalieri caricati
 # @param    string regione la regione i cui dati ritornare
 # @return   list dizionari contenenti i dati nazionali giornalieri
-def lett_dati_reg(dati, regione):
+def lett_dati_reg(dati, dati_vaccini, regione):
     # Lista di dizionari, poi ritornata dalla funzione
     dati_calcolati = []
 
@@ -177,6 +286,8 @@ def lett_dati_reg(dati, regione):
     tot_c_ieri = 0
     tot_t_ieri = 0
     tot_m_ieri = 0
+    tot_prima_dose = 0
+    tot_sec_dose = 0
 
     # Aggiunta dei dati alle liste per ogni data disponibile
     # Nota: I nuovi casi testati ed i nuovi tamponi effettuati non
@@ -198,10 +309,21 @@ def lett_dati_reg(dati, regione):
                 nuovi_t = tot_t_oggi - tot_t_ieri
                 nuovi_m = tot_m_oggi - tot_m_ieri
 
+                data = dato['data'][5:10]
+
+                if data in dati_vaccini:
+                    prima_dose_oggi = dati_vaccini[data]['prima_dose']
+                    sec_dose_oggi = dati_vaccini[data]['seconda_dose']
+
+                    tot_prima_dose = tot_prima_dose + prima_dose_oggi
+                    tot_sec_dose = tot_sec_dose + sec_dose_oggi
+
                 # Dizionario con i dati che ci interessano
                 n_dato = {
-                    'data' : dato['data'][5:10],
-                    'nuovi_positivi' : dato['nuovi_positivi']
+                    'data': data,
+                    'nuovi_positivi': dato['nuovi_positivi'],
+                    'tot_prima_dose': tot_prima_dose,
+                    'tot_sec_dose': tot_sec_dose
                 }
 
                 # Soluzione al problema dei dati che cumulativi che diminuiscono
@@ -681,18 +803,20 @@ if __name__ == "__main__":
             
             if arg_lower == 'italia':
                 dati = caric_dati_it()
-                dati_vaccini = caric_dati_vaccini()
+                dati_vaccini = caric_dati_vaccini_it()
                 dati_json = lett_dati_it(dati, dati_vaccini)
                 pop = TOT_POP_IT
+            elif arg_lower in INFO_REGIONI:
+                info_reg_json = INFO_REGIONI[arg_lower]
+                reg_nome = info_reg_json['nome_dato']
+                pop = info_reg_json['pop']
+
+                dati = caric_dati_reg()
+                dati_vaccini = caric_dati_vaccini_reg(arg_lower)
+                dati_json = lett_dati_reg(dati, dati_vaccini, reg_nome)
             else:
-                arg_json = REG_LOW_JSON[arg_lower]
-                if arg_json in POP_REGIONI:
-                    dati = caric_dati_reg()
-                    dati_json = lett_dati_reg(dati, arg_json)
-                    pop = POP_REGIONI[arg_json]
-                else:
-                    print(arg + ' non è una regione')
-                    exit()
+                print(arg + ' non è una regione')
+                exit()
 
             calcoli_e_stampe(dati_json, arg.upper(), pop, id)
             
