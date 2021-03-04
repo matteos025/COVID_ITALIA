@@ -177,7 +177,6 @@ def caric_dati_vaccini_reg(regione):
     dati = json.load(json_file)
 
     area = INFO_REGIONI[regione]["area"]
-
     dati_parsati = {}
 
     for dato in dati['data']:
@@ -212,6 +211,7 @@ def lett_dati_it(dati, dati_vaccini):
     tot_m_ieri = 0
     tot_prima_dose = 0
     tot_sec_dose = 0
+    ultima_data = ''
 
     # Aggiunta dei dati alle liste per ogni data disponibile
     # Nota: I nuovi casi testati ed i nuovi tamponi effettuati non
@@ -220,17 +220,16 @@ def lett_dati_it(dati, dati_vaccini):
         tot_c_oggi = dato['casi_testati']
         tot_t_oggi = dato['tamponi']
         tot_m_oggi = dato['deceduti']
+        data = dato['data'][5:10]
 
         # Si prendono i dati da quando inizia ad essere fornito il
         # dato sui casi testati (fine Aprile)
-        if tot_c_oggi != None :
+        if (tot_c_oggi != None) and (data != ultima_data) :
             # Calcolo dei nuovi casi testati e dei tamponi
             # effettuati
             nuovi_c = tot_c_oggi - tot_c_ieri
             nuovi_t = tot_t_oggi - tot_t_ieri
             nuovi_m = tot_m_oggi - tot_m_ieri
-
-            data = dato['data'][5:10]
 
             if data in dati_vaccini:
                 prima_dose_oggi = dati_vaccini[data]['prima_dose']
@@ -267,6 +266,7 @@ def lett_dati_it(dati, dati_vaccini):
             tot_c_ieri = tot_c_oggi
             tot_t_ieri = tot_t_oggi
             tot_m_ieri = tot_m_oggi
+            ultima_data = data
 
     return dati_calcolati
 
@@ -288,14 +288,17 @@ def lett_dati_reg(dati, dati_vaccini, regione):
     tot_m_ieri = 0
     tot_prima_dose = 0
     tot_sec_dose = 0
+    ultima_data = ''
 
     # Aggiunta dei dati alle liste per ogni data disponibile
     # Nota: I nuovi casi testati ed i nuovi tamponi effettuati non
     # sono forniti, quindi vanno calcolati
     for dato in dati:
+
+        data = dato['data'][5:10]
         # Controllo che il dato si riferisca alla regione di nostro
         # interessa
-        if dato['denominazione_regione'] == regione:
+        if (dato['denominazione_regione'] == regione) and (data != ultima_data):
             tot_c_oggi = dato['casi_testati']
             tot_t_oggi = dato['tamponi']
             tot_m_oggi = dato['deceduti']
@@ -308,8 +311,6 @@ def lett_dati_reg(dati, dati_vaccini, regione):
                 nuovi_c = tot_c_oggi - tot_c_ieri
                 nuovi_t = tot_t_oggi - tot_t_ieri
                 nuovi_m = tot_m_oggi - tot_m_ieri
-
-                data = dato['data'][5:10]
 
                 if data in dati_vaccini:
                     prima_dose_oggi = dati_vaccini[data]['prima_dose']
@@ -346,6 +347,7 @@ def lett_dati_reg(dati, dati_vaccini, regione):
                 tot_c_ieri = tot_c_oggi
                 tot_t_ieri = tot_t_oggi
                 tot_m_ieri = tot_m_oggi
+                ultima_data = data
 
     return dati_calcolati
 
@@ -539,6 +541,22 @@ def print_expected_20(num_day_avg, avg_n_pos, avg_diff):
         print("Trend negativo, previsione a 20.0 impossibile")
 
 
+
+def traccia_andamento_vaccini(date, prima_dose, seconda_dose, regione):
+    plt.figure(2)
+    linea_prima_dose, = plt.plot(date, prima_dose)
+    linea_prima_dose.set_label('Prima dose')
+
+    linea_seconda_dose, = plt.plot(date, seconda_dose)
+    linea_seconda_dose.set_label('Seconda dose')
+
+    plt.xticks(np.arange(0, len(date), step=4))
+    plt.xlabel('Date')
+    plt.ylabel('Percentuale di popolazione')
+    plt.title('Somministrazioni cumulative in %s' % regione)
+    plt.legend()
+
+
 # @desc     TODO
 # @param    TODO
 # @param    TODO
@@ -577,7 +595,7 @@ def traccia_ultimi_giorni(days, dates, n_pos_7d, new_c_7d, new_t_7d, \
     plt.xticks(np.arange(0, days, step=2))
     plt.xlabel('Date')
     plt.title('Valori %s cumulativi ultimi 7 giorni per 100.000'
-        ' persone' % regione)
+         ' persone' % regione)
     plt.legend()
 
 
@@ -765,6 +783,18 @@ def calcoli_e_stampe(dati, regionName, tot_pop, id_grafico, pop_rel = 100000.0,
     print("")
 
     # Creare liste da JSON per plottare grafici
+    date = []
+    prima_dose = []
+    seconda_dose = []
+
+    for i in range(0, len(dati)):
+        if dati[i]['tot_prima_dose'] > 0:
+            date.append(dati[i]['data'])
+            prima_dose.append(dati[i]['tot_prima_dose'] * 100.0 / tot_pop)
+            seconda_dose.append(dati[i]['tot_sec_dose'] * 100.0 / tot_pop)
+
+    traccia_andamento_vaccini(date, prima_dose, seconda_dose, regionName)
+
     date = []
     n_pos_7d = []
     new_c_7d = []
