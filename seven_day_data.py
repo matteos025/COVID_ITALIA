@@ -574,10 +574,10 @@ def traccia_ultimi_giorni(days, dates, n_pos_7d, new_c_7d, new_t_7d, \
     linea_nuovi_pos.set_label('Nuovi positivi')
 
     linea_test, = plt.plot(dates[start_date:], new_c_7d[start_date:])
-    linea_test.set_label('Nuovi casi testati * 10')
+    linea_test.set_label('Nuovi casi testati / 10')
 
     linea_tamponi, = plt.plot(dates[start_date:], new_t_7d[start_date:])
-    linea_tamponi.set_label('Nuovi tamponi * 10')
+    linea_tamponi.set_label('Nuovi tamponi / 10')
 
     linea_pos_per_test, = plt.plot(dates[start_date:], n_pos_per_c[start_date:])
     linea_pos_per_test.set_label('Positivi per casi testati in millesimi di %')
@@ -587,10 +587,10 @@ def traccia_ultimi_giorni(days, dates, n_pos_7d, new_c_7d, new_t_7d, \
     linea_pos_per_tamponi.set_label('Positivi per tamponi in millesimi di %')
 
     linea_entrate_ti_7d, = plt.plot(dates[start_date:], n_ti_7d[start_date:])
-    linea_entrate_ti_7d.set_label('Entrate in terapia intensiva / 100')
+    linea_entrate_ti_7d.set_label('Entrate in terapia intensiva * 100')
 
     linea_nuovi_mor, = plt.plot(dates[start_date:], n_mor_7gg[start_date:])
-    linea_nuovi_mor.set_label('Nuovi morti / 10')
+    linea_nuovi_mor.set_label('Nuovi morti * 100')
 
     plt.xticks(np.arange(0, days, step=2))
     plt.xlabel('Date')
@@ -813,7 +813,7 @@ def calcoli_e_stampe(dati, regionName, tot_pop, id_grafico, pop_rel = 100000.0,
         n_pos_per_c.append(dati_i['nuovi_pos_per_casi_7gg'] * 10.0)
         n_pos_per_t.append(dati_i['nuovi_pos_per_test_7gg'] * 10.0)
         n_ti_7d.append(dati_i['nuove_entrate_ti_7gg'] * 100.0)
-        n_m_7gg.append(dati_i['nuovi_morti_7gg'] * 10.0)
+        n_m_7gg.append(dati_i['nuovi_morti_7gg'] * 100.0)
     
     traccia_ultimi_giorni(gg_trac, date, n_pos_7d, new_c_7d, new_t_7d, \
         n_pos_per_c, n_pos_per_t, n_ti_7d, n_m_7gg, id_grafico, regionName)
