@@ -14,7 +14,8 @@ TOT_POP_IT = 60244639.0
 MONTHS = {1: "Gennaio", 2: "Febbraio", 3: "Marzo", 4: "Aprile", 
           5: "Maggio", 6: "Giugno", 7: "Luglio", 8: "Agosto", 
           9: "Settembre", 10: "Ottobre", 11: "Novembre", 
-          12: "Dicembre"};
+          12: "Dicembre"
+};
 
 INFO_REGIONI = {
     "abruzzo": {
@@ -148,6 +149,7 @@ def caric_dati_reg():
     data = json.load(json_file)
     return data
 
+
 # @desc     caricamento dei dati di tutte le regioni italiane dalla repository 
 #           opendata
 # @return   lista di dizionari contenenti i dati regionali sui vaccini
@@ -172,6 +174,9 @@ def caric_dati_vaccini_it():
     return dati_parsati
 
 
+# @desc     caricamento dei dati di una singola regione dalla repository 
+#           opendata
+# @return   lista di dizionari contenenti i dati regionali sui vaccini
 def caric_dati_vaccini_reg(regione):
     json_file = open('COVID-VACCINI/dati/somministrazioni-vaccini-latest.json')
     dati = json.load(json_file)
@@ -212,6 +217,7 @@ def lett_dati_it(dati, dati_vaccini):
     tot_prima_dose = 0
     tot_sec_dose = 0
     ultima_data = ''
+    somm_oggi = 0
 
     # Aggiunta dei dati alle liste per ogni data disponibile
     # Nota: I nuovi casi testati ed i nuovi tamponi effettuati non
@@ -237,11 +243,13 @@ def lett_dati_it(dati, dati_vaccini):
 
                 tot_prima_dose = tot_prima_dose + prima_dose_oggi
                 tot_sec_dose = tot_sec_dose + sec_dose_oggi
+                somm_oggi = prima_dose_oggi + sec_dose_oggi
 
             # Dizionario con i dati che ci interessano
             n_dato = {
                 'data': data,
                 'nuovi_positivi': dato['nuovi_positivi'],
+                'somministrazioni_oggi': somm_oggi,
                 'tot_prima_dose': tot_prima_dose,
                 'tot_sec_dose': tot_sec_dose
             }
@@ -288,6 +296,7 @@ def lett_dati_reg(dati, dati_vaccini, regione):
     tot_m_ieri = 0
     tot_prima_dose = 0
     tot_sec_dose = 0
+    somm_oggi = 0
     ultima_data = ''
 
     # Aggiunta dei dati alle liste per ogni data disponibile
@@ -318,11 +327,13 @@ def lett_dati_reg(dati, dati_vaccini, regione):
 
                     tot_prima_dose = tot_prima_dose + prima_dose_oggi
                     tot_sec_dose = tot_sec_dose + sec_dose_oggi
+                    somm_oggi = prima_dose_oggi + sec_dose_oggi
 
                 # Dizionario con i dati che ci interessano
                 n_dato = {
                     'data': data,
                     'nuovi_positivi': dato['nuovi_positivi'],
+                    'somministrazioni_oggi': somm_oggi,
                     'tot_prima_dose': tot_prima_dose,
                     'tot_sec_dose': tot_sec_dose
                 }
@@ -351,12 +362,6 @@ def lett_dati_reg(dati, dati_vaccini, regione):
 
     return dati_calcolati
 
-#def lett_dati_vacc_it(dati_vaccini):
-#    dati_calcolati = []
-#    for dato in dati_vaccini['data']:
-#        data = dato['data_somministrazione'][:10]
-#        print(data)
-
 
 # @desc     calcolo di nuovi positivi, nuovi casi testati, nuovi tamponi 
 #           effettuati, percentuale di positivi per casi testati, percentuale di
@@ -378,6 +383,8 @@ def calcoli(dati, tot_pop, gg, rel_pop):
     tot_nuovi_t = 0
     tot_entrate_ti = 0
     tot_nuovi_m = 0
+    tot_somm_ultimi_7gg = 0
+    somm_ultimi_7gg = 0
 
     # Calcolo del primo valore per ciascuno dei dati
     for i in range(0, 7):
@@ -391,6 +398,8 @@ def calcoli(dati, tot_pop, gg, rel_pop):
             tot_entrate_ti += dati_i['entrate_ti']
         if 'nuovi_morti' in dati_i:
             tot_nuovi_m += dati_i['nuovi_morti']
+        if 'somministrazioni_oggi' in dati_i:
+            somm_ultimi_7gg += dati_i['somministrazioni_oggi']
 
     # Calcolo e aggiornamento della lista dati_calcolati
     for i in range(7, len(dati)):
@@ -402,6 +411,7 @@ def calcoli(dati, tot_pop, gg, rel_pop):
         n_pos_per_t_today = tot_nuovi_p * 100.0 / tot_nuovi_t
         entry_ic_today = tot_entrate_ti * rel_pop / tot_pop
         n_morti_7gg = tot_nuovi_m * rel_pop / tot_pop
+        media_mobile_somm = somm_ultimi_7gg / 7
 
         # Dizionario con i dati che ci interessano
         dato_calcolato = {
@@ -412,7 +422,8 @@ def calcoli(dati, tot_pop, gg, rel_pop):
             'nuovi_pos_per_casi_7gg': n_pos_per_c_today,
             'nuovi_pos_per_test_7gg': n_pos_per_t_today,
             'nuove_entrate_ti_7gg': entry_ic_today,
-            'nuovi_morti_7gg': n_morti_7gg
+            'nuovi_morti_7gg': n_morti_7gg,
+            'media_somm_7gg': media_mobile_somm
         }
 
         dati_calcolati.append(dato_calcolato)
@@ -442,6 +453,11 @@ def calcoli(dati, tot_pop, gg, rel_pop):
             tot_nuovi_m += dati_oggi['nuovi_morti']
         if 'nuovi_morti' in dati_sett_fa:
             tot_nuovi_m -= dati_sett_fa['nuovi_morti']
+
+        if 'somministrazioni_oggi' in dati_oggi:
+            somm_ultimi_7gg += dati_oggi['somministrazioni_oggi']
+        if 'somministrazioni_oggi' in dati_sett_fa:
+            somm_ultimi_7gg -= dati_sett_fa['somministrazioni_oggi']
     
     # Calcolo dell'ultimo valore
     n_pos_7gg = tot_nuovi_p * rel_pop / tot_pop
@@ -451,6 +467,7 @@ def calcoli(dati, tot_pop, gg, rel_pop):
     n_pos_per_t_today = tot_nuovi_p * 100.0 / tot_nuovi_t
     entry_ic_today = tot_entrate_ti * rel_pop / tot_pop
     n_morti_7gg = tot_nuovi_m * rel_pop / tot_pop
+    media_mobile_somm = somm_ultimi_7gg / 7
 
     # Dizionario con i dati che ci interessano
     dato_calcolato = {
@@ -461,7 +478,8 @@ def calcoli(dati, tot_pop, gg, rel_pop):
         'nuovi_pos_per_casi_7gg': n_pos_per_c_today,
         'nuovi_pos_per_test_7gg': n_pos_per_t_today,
         'nuove_entrate_ti_7gg': entry_ic_today,
-        'nuovi_morti_7gg': n_morti_7gg
+        'nuovi_morti_7gg': n_morti_7gg,
+        'media_somm_7gg': media_mobile_somm
     }
 
     dati_calcolati.append(dato_calcolato)
@@ -543,7 +561,7 @@ def print_expected_20(num_day_avg, avg_n_pos, avg_diff):
 
 
 def traccia_andamento_vaccini(date, prima_dose, seconda_dose, regione):
-    plt.figure(2)
+    plt.figure(6)
     linea_prima_dose, = plt.plot(date, prima_dose)
     linea_prima_dose.set_label('Prima dose')
 
@@ -563,35 +581,63 @@ def traccia_andamento_vaccini(date, prima_dose, seconda_dose, regione):
 # @param    TODO
 # @return   TODO
 # TODO: Cambiare funzione in italiano e commentare
-def traccia_ultimi_giorni(days, dates, n_pos_7d, new_c_7d, new_t_7d, \
-                          n_pos_per_c, n_pos_per_t, n_ti_7d, n_mor_7gg, id, 
-                          regione):
+def traccia_ultimi_giorni(days, dates, n_pos_7d, new_c_7d, new_t_7d, n_pos_per_c, n_pos_per_t, n_ti_7d, n_mor_7gg, id, regione):
     start_date = len(dates) - days
 
     plt.figure(id)
-
     linea_nuovi_pos, = plt.plot(dates[start_date:], n_pos_7d[start_date:])
     linea_nuovi_pos.set_label('Nuovi positivi')
+    plt.xticks(np.arange(0, days, step=2))
+    plt.xlabel('Date')
+    plt.title('Valori %s cumulativi ultimi 7 giorni per 100.000'
+         ' persone' % regione)
+    plt.legend()
 
+    plt.figure(id + 1)
     linea_test, = plt.plot(dates[start_date:], new_c_7d[start_date:])
-    linea_test.set_label('Nuovi casi testati / 10')
+    linea_test.set_label('Nuovi casi testati')
+    plt.xticks(np.arange(0, days, step=2))
+    plt.xlabel('Date')
+    plt.title('Valori %s cumulativi ultimi 7 giorni per 100.000'
+         ' persone' % regione)
 
     linea_tamponi, = plt.plot(dates[start_date:], new_t_7d[start_date:])
-    linea_tamponi.set_label('Nuovi tamponi / 10')
+    linea_tamponi.set_label('Nuovi tamponi')
+    plt.xticks(np.arange(0, days, step=2))
+    plt.xlabel('Date')
+    plt.title('Valori %s cumulativi ultimi 7 giorni per 100.000'
+         ' persone' % regione)
+    plt.legend()
 
+    plt.figure(id + 2)
     linea_pos_per_test, = plt.plot(dates[start_date:], n_pos_per_c[start_date:])
-    linea_pos_per_test.set_label('Positivi per casi testati in millesimi di %')
+    linea_pos_per_test.set_label('Positivi per casi testati in %')
+    plt.xticks(np.arange(0, days, step=2))
+    plt.xlabel('Date')
+    plt.title('Valori %s cumulativi ultimi 7 giorni per 100.000'
+         ' persone' % regione)
 
     linea_pos_per_tamponi, = plt.plot(dates[start_date:], \
        n_pos_per_t[start_date:])
-    linea_pos_per_tamponi.set_label('Positivi per tamponi in millesimi di %')
+    linea_pos_per_tamponi.set_label('Positivi per tamponi in %')
+    plt.xticks(np.arange(0, days, step=2))
+    plt.xlabel('Date')
+    plt.title('Valori %s cumulativi ultimi 7 giorni per 100.000'
+         ' persone' % regione)
+    plt.legend()
 
+    plt.figure(id + 3)
     linea_entrate_ti_7d, = plt.plot(dates[start_date:], n_ti_7d[start_date:])
-    linea_entrate_ti_7d.set_label('Entrate in terapia intensiva * 100')
+    linea_entrate_ti_7d.set_label('Entrate in terapia intensiva')
+    plt.xticks(np.arange(0, days, step=2))
+    plt.xlabel('Date')
+    plt.title('Valori %s cumulativi ultimi 7 giorni per 100.000'
+         ' persone' % regione)
+    plt.legend()
 
+    plt.figure(id + 4)
     linea_nuovi_mor, = plt.plot(dates[start_date:], n_mor_7gg[start_date:])
-    linea_nuovi_mor.set_label('Nuovi morti * 100')
-
+    linea_nuovi_mor.set_label('Nuovi morti')
     plt.xticks(np.arange(0, days, step=2))
     plt.xlabel('Date')
     plt.title('Valori %s cumulativi ultimi 7 giorni per 100.000'
@@ -757,6 +803,16 @@ def calcoli_e_stampe(dati, regionName, tot_pop, id_grafico, pop_rel = 100000.0,
         "   \u2022 OGGI", data_sett_fa, n_m_sett_fa, 
         "   \u2022 SETTIMANA FA", False)
 
+    
+    somm_media_oggi = dati_calcolati[indice_oggi]['media_somm_7gg']
+    somm_media_sett_fa = dati_calcolati[indice_sett_fa]['media_somm_7gg']
+
+    frase_iniziale = "\nMedia mobile 7gg nuove somministrazioni:"
+    stampa_due_valori(frase_iniziale, data_oggi, somm_media_oggi, 
+        "   \u2022 OGGI", data_sett_fa, somm_media_sett_fa, 
+        "   \u2022 SETTIMANA FA", False)
+
+
     indice_oggi = len(dati) - 1
     indice_sett_fa = len(dati) - 8
 
@@ -782,19 +838,6 @@ def calcoli_e_stampe(dati, regionName, tot_pop, id_grafico, pop_rel = 100000.0,
 
     print("")
 
-    # Creare liste da JSON per plottare grafici
-    date = []
-    prima_dose = []
-    seconda_dose = []
-
-    for i in range(0, len(dati)):
-        if dati[i]['tot_prima_dose'] > 0:
-            date.append(dati[i]['data'])
-            prima_dose.append(dati[i]['tot_prima_dose'] * 100.0 / tot_pop)
-            seconda_dose.append(dati[i]['tot_sec_dose'] * 100.0 / tot_pop)
-
-    traccia_andamento_vaccini(date, prima_dose, seconda_dose, regionName)
-
     date = []
     n_pos_7d = []
     new_c_7d = []
@@ -808,15 +851,28 @@ def calcoli_e_stampe(dati, regionName, tot_pop, id_grafico, pop_rel = 100000.0,
         dati_i = dati_calcolati[i]
         date.append(dati_i['data'])
         n_pos_7d.append(dati_i['nuovi_pos_7gg'])
-        new_c_7d.append(dati_i['nuovi_casi_test_7gg'] / 10.0)
-        new_t_7d.append(dati_i['nuovi_tamponi_7gg'] / 10.0)
-        n_pos_per_c.append(dati_i['nuovi_pos_per_casi_7gg'] * 10.0)
-        n_pos_per_t.append(dati_i['nuovi_pos_per_test_7gg'] * 10.0)
-        n_ti_7d.append(dati_i['nuove_entrate_ti_7gg'] * 100.0)
-        n_m_7gg.append(dati_i['nuovi_morti_7gg'] * 100.0)
+        new_c_7d.append(dati_i['nuovi_casi_test_7gg'])
+        new_t_7d.append(dati_i['nuovi_tamponi_7gg'])
+        n_pos_per_c.append(dati_i['nuovi_pos_per_casi_7gg'])
+        n_pos_per_t.append(dati_i['nuovi_pos_per_test_7gg'])
+        n_ti_7d.append(dati_i['nuove_entrate_ti_7gg'])
+        n_m_7gg.append(dati_i['nuovi_morti_7gg'])
     
     traccia_ultimi_giorni(gg_trac, date, n_pos_7d, new_c_7d, new_t_7d, \
         n_pos_per_c, n_pos_per_t, n_ti_7d, n_m_7gg, id_grafico, regionName)
+
+    # Creare liste da JSON per plottare grafici
+    date = []
+    prima_dose = []
+    seconda_dose = []
+
+    for i in range(0, len(dati)):
+        if dati[i]['tot_prima_dose'] > 0:
+            date.append(dati[i]['data'])
+            prima_dose.append(dati[i]['tot_prima_dose'] * 100.0 / tot_pop)
+            seconda_dose.append(dati[i]['tot_sec_dose'] * 100.0 / tot_pop)
+
+    traccia_andamento_vaccini(date, prima_dose, seconda_dose, regionName)
 
 
 if __name__ == "__main__":
@@ -850,7 +906,7 @@ if __name__ == "__main__":
 
             calcoli_e_stampe(dati_json, arg.upper(), pop, id)
             
-            id += 1
+            id += 6
 
         plt.show()
 
