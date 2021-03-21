@@ -220,8 +220,9 @@ def lett_dati_it(dati, dati_vaccini):
     somm_oggi = 0
 
     # Aggiunta dei dati alle liste per ogni data disponibile
-    # Nota: I nuovi casi testati ed i nuovi tamponi effettuati non
-    # sono forniti, quindi vanno calcolati
+    # Nota: I nuovi casi testati, i nuovi tamponi effettuati e le
+    # somministrazioni totali di prima e di seconda dose non
+    # sono forniti. Vanno quindi calcolati
     for dato in dati:
         tot_c_oggi = dato['casi_testati']
         tot_t_oggi = dato['tamponi']
@@ -561,7 +562,7 @@ def print_expected_20(num_day_avg, avg_n_pos, avg_diff):
 
 
 def traccia_andamento_vaccini(date, prima_dose, seconda_dose, regione):
-    plt.figure(6)
+    plt.figure(7)
     linea_prima_dose, = plt.plot(date, prima_dose)
     linea_prima_dose.set_label('Prima dose')
 
@@ -581,7 +582,7 @@ def traccia_andamento_vaccini(date, prima_dose, seconda_dose, regione):
 # @param    TODO
 # @return   TODO
 # TODO: Cambiare funzione in italiano e commentare
-def traccia_ultimi_giorni(days, dates, n_pos_7d, new_c_7d, new_t_7d, n_pos_per_c, n_pos_per_t, n_ti_7d, n_mor_7gg, id, regione):
+def traccia_ultimi_giorni(days, dates, n_pos_7d, new_c_7d, new_t_7d, n_pos_per_c, n_pos_per_t, n_ti_7d, n_mor_7gg, media_somm, id, regione):
     start_date = len(dates) - days
 
     plt.figure(id)
@@ -612,13 +613,7 @@ def traccia_ultimi_giorni(days, dates, n_pos_7d, new_c_7d, new_t_7d, n_pos_per_c
     plt.figure(id + 2)
     linea_pos_per_test, = plt.plot(dates[start_date:], n_pos_per_c[start_date:])
     linea_pos_per_test.set_label('Positivi per casi testati in %')
-    plt.xticks(np.arange(0, days, step=2))
-    plt.xlabel('Date')
-    plt.title('Valori %s cumulativi ultimi 7 giorni per 100.000'
-         ' persone' % regione)
-
-    linea_pos_per_tamponi, = plt.plot(dates[start_date:], \
-       n_pos_per_t[start_date:])
+    linea_pos_per_tamponi, = plt.plot(dates[start_date:], n_pos_per_t[start_date:])
     linea_pos_per_tamponi.set_label('Positivi per tamponi in %')
     plt.xticks(np.arange(0, days, step=2))
     plt.xlabel('Date')
@@ -628,21 +623,26 @@ def traccia_ultimi_giorni(days, dates, n_pos_7d, new_c_7d, new_t_7d, n_pos_per_c
 
     plt.figure(id + 3)
     linea_entrate_ti_7d, = plt.plot(dates[start_date:], n_ti_7d[start_date:])
-    linea_entrate_ti_7d.set_label('Entrate in terapia intensiva')
     plt.xticks(np.arange(0, days, step=2))
     plt.xlabel('Date')
+    plt.ylabel('Entrate in terapia intensiva')
     plt.title('Valori %s cumulativi ultimi 7 giorni per 100.000'
          ' persone' % regione)
-    plt.legend()
 
     plt.figure(id + 4)
     linea_nuovi_mor, = plt.plot(dates[start_date:], n_mor_7gg[start_date:])
-    linea_nuovi_mor.set_label('Nuovi morti')
     plt.xticks(np.arange(0, days, step=2))
     plt.xlabel('Date')
+    plt.ylabel('Nuovi morti')
     plt.title('Valori %s cumulativi ultimi 7 giorni per 100.000'
          ' persone' % regione)
-    plt.legend()
+
+    plt.figure(id + 5)
+    linea_nuovi_mor, = plt.plot(dates[start_date:], media_somm[start_date:])
+    plt.xticks(np.arange(0, days, step=2))
+    plt.xlabel('Date')
+    plt.ylabel('Migliaia di somministrazioni')
+    plt.title('Valori %s media mobile ultimi 7 giorni' % regione)
 
 
 # @desc     TODO
@@ -846,6 +846,7 @@ def calcoli_e_stampe(dati, regionName, tot_pop, id_grafico, pop_rel = 100000.0,
     n_pos_per_t = []
     n_ti_7d = []
     n_m_7gg = []
+    media_mobile_somm = []
     
     for i in range(0, len(dati_calcolati)):
         dati_i = dati_calcolati[i]
@@ -857,9 +858,10 @@ def calcoli_e_stampe(dati, regionName, tot_pop, id_grafico, pop_rel = 100000.0,
         n_pos_per_t.append(dati_i['nuovi_pos_per_test_7gg'])
         n_ti_7d.append(dati_i['nuove_entrate_ti_7gg'])
         n_m_7gg.append(dati_i['nuovi_morti_7gg'])
+        media_mobile_somm.append(dati_i['media_somm_7gg'] / 1000.0)
     
     traccia_ultimi_giorni(gg_trac, date, n_pos_7d, new_c_7d, new_t_7d, \
-        n_pos_per_c, n_pos_per_t, n_ti_7d, n_m_7gg, id_grafico, regionName)
+        n_pos_per_c, n_pos_per_t, n_ti_7d, n_m_7gg, media_mobile_somm, id_grafico, regionName)
 
     # Creare liste da JSON per plottare grafici
     date = []
