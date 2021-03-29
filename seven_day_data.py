@@ -561,8 +561,8 @@ def print_expected_20(num_day_avg, avg_n_pos, avg_diff):
 
 
 
-def traccia_andamento_vaccini(date, prima_dose, seconda_dose, regione):
-    plt.figure(7)
+def traccia_andamento_vaccini(date, prima_dose, seconda_dose, regione, id):
+    plt.figure(id + 6)
     linea_prima_dose, = plt.plot(date, prima_dose)
     linea_prima_dose.set_label('Prima dose')
 
@@ -874,7 +874,7 @@ def calcoli_e_stampe(dati, regionName, tot_pop, id_grafico, pop_rel = 100000.0,
             prima_dose.append(dati[i]['tot_prima_dose'] * 100.0 / tot_pop)
             seconda_dose.append(dati[i]['tot_sec_dose'] * 100.0 / tot_pop)
 
-    traccia_andamento_vaccini(date, prima_dose, seconda_dose, regionName)
+    traccia_andamento_vaccini(date, prima_dose, seconda_dose, regionName, id_grafico)
 
 
 if __name__ == "__main__":
@@ -908,7 +908,7 @@ if __name__ == "__main__":
 
             calcoli_e_stampe(dati_json, arg.upper(), pop, id)
             
-            id += 6
+            id += 7
 
         plt.show()
 
