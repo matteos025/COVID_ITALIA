@@ -11,10 +11,11 @@ import sys
 TOT_POP_IT = 60244639.0
 
 # Indici mappati ai relativi mesi
-MONTHS = {1: "Gennaio", 2: "Febbraio", 3: "Marzo", 4: "Aprile", 
-          5: "Maggio", 6: "Giugno", 7: "Luglio", 8: "Agosto", 
-          9: "Settembre", 10: "Ottobre", 11: "Novembre", 
-          12: "Dicembre"
+MONTHS = {
+    1: "Gennaio", 2: "Febbraio", 3: "Marzo", 4: "Aprile", 
+    5: "Maggio", 6: "Giugno", 7: "Luglio", 8: "Agosto", 
+    9: "Settembre", 10: "Ottobre", 11: "Novembre", 
+    12: "Dicembre"
 };
 
 INFO_REGIONI = {
@@ -126,14 +127,14 @@ INFO_REGIONI = {
 }
 
 # Directory di questo file
-__location__ = os.path.realpath(os.path.join(os.getcwd(), \
-                                os.path.dirname(__file__)))
+__location__ = os.path.realpath(os.path.join(os.getcwd(),
+    os.path.dirname(__file__)))
 
 
-# @desc     caricamento dei dati nazionali dalla repository della Protezione 
-#           Civile
+# @desc     Caricamento dell'andamento nazionale del COVID19 dalla repository
+#           GitHub della Protezione Civile
 # @param    N/A
-# @return   lista di dizionari contenenti i dati nazionali giornalieri
+# @return   Lista di dizionari contenenti i dati nazionali giornalieri
 def caric_dati_it():
     json_file = open(os.path.join(__location__,
         'COVID-DATI/dati-json/dpc-covid19-ita-andamento-nazionale.json'))
@@ -141,57 +142,57 @@ def caric_dati_it():
     return data
 
 
-# @desc     caricamento dei dati di tutte le regioni italiane dalla repository 
-#           della Protezione Civile
-# @return   lista di dizionari contenenti i dati nazionali giornalieri
+# @desc     Caricamento dell'andamento regionale del COVID19 dalla repository
+#           GitHub della Protezione Civile
+# @return   Lista di dizionari contenenti i dati nazionali giornalieri
 def caric_dati_reg():
     json_file = open('COVID-DATI/dati-json/dpc-covid19-ita-regioni.json')
     data = json.load(json_file)
     return data
 
 
-# @desc     caricamento dei dati di tutte le regioni italiane dalla repository 
+# @desc     Caricamento dei dati di una regione italiana dalla repository 
 #           opendata
-# @return   lista di dizionari contenenti i dati regionali sui vaccini
-def caric_dati_vaccini_it():
+# @return   Lista di dizionari contenenti i dati regionali sui vaccini
+def caric_dati_vaccini(area = 'IT'):
     json_file = open('COVID-VACCINI/dati/somministrazioni-vaccini-latest.json')
     dati = json.load(json_file)
 
     dati_parsati = {}
 
     for dato in dati['data']:
-        data = dato['data_somministrazione'][5:10]
-        if data in dati_parsati:
-            dati_parsati[data]['prima_dose'] += dato['prima_dose']
-            dati_parsati[data]['seconda_dose'] += dato['seconda_dose']
-        else:
-            nuovo_dato = {
-                'prima_dose': dato['prima_dose'],
-                'seconda_dose': dato['seconda_dose']
-            }
-            dati_parsati[data] = nuovo_dato
-
-    return dati_parsati
-
-
-# @desc     caricamento dei dati di una singola regione dalla repository 
-#           opendata
-# @return   lista di dizionari contenenti i dati regionali sui vaccini
-def caric_dati_vaccini_reg(regione):
-    json_file = open('COVID-VACCINI/dati/somministrazioni-vaccini-latest.json')
-    dati = json.load(json_file)
-
-    area = INFO_REGIONI[regione]["area"]
-    dati_parsati = {}
-
-    for dato in dati['data']:
-        if dato["area"] == area:
+        if ((area == 'IT') or (dato['area'] == area)):
             data = dato['data_somministrazione'][5:10]
             if data in dati_parsati:
+                dati_parsati[data]['sesso_femminile'] += dato['sesso_femminile']
+                dati_parsati[data]['sesso_maschile'] += dato['sesso_maschile']
+                dati_parsati[data]['operatori_sanitari'] += \
+                    dato['categoria_operatori_sanitari_sociosanitari']
+                dati_parsati[data]['personale_non_sanitario'] += \
+                    dato['categoria_personale_non_sanitario']
+                dati_parsati[data]['altro'] += dato['categoria_altro']
+                dati_parsati[data]['ospiti_rsa'] += dato['categoria_ospiti_rsa']
+                dati_parsati[data]['over80'] += dato['categoria_over80']
+                dati_parsati[data]['forze_armate'] += dato['categoria_forze_armate']
+                dati_parsati[data]['personale_scolastico'] += \
+                    dato['categoria_personale_scolastico']
                 dati_parsati[data]['prima_dose'] += dato['prima_dose']
                 dati_parsati[data]['seconda_dose'] += dato['seconda_dose']
             else:
                 nuovo_dato = {
+                    'sesso_femminile': dato['sesso_femminile'],
+                    'sesso_maschile': dato['sesso_maschile'],
+                    'operatori_sanitari':
+                        dato['categoria_operatori_sanitari_sociosanitari'],
+                    'personale_non_sanitario':
+                        dato['categoria_personale_non_sanitario'],
+                    'altro': dato['categoria_altro'],
+                    'ospiti_rsa': dato['categoria_ospiti_rsa'],
+                    'over80': dato['categoria_over80'],
+                    'forze_armate': dato['categoria_forze_armate'],
+                    'personale_scolastico':
+                        dato['categoria_personale_scolastico'],
+                    'sesso_femminile': dato['sesso_femminile'],
                     'prima_dose': dato['prima_dose'],
                     'seconda_dose': dato['seconda_dose']
                 }
@@ -541,26 +542,6 @@ def avg_over_some_days(date, valori, giorni):
     return date[giorni - 1:], media_valori
 
 
-# @desc     TODO
-# @param    TODO
-# @param    TODO
-# @param    TODO
-# @return   TODO
-# TODO: Cambiare funzione in italiano e commentare
-def print_expected_20(num_day_avg, avg_n_pos, avg_diff):
-    last_avg_n_pos_diff = avg_diff[len(avg_diff) - 1]
-    last_avg_n_pos = avg_n_pos[len(avg_n_pos) - 1]
-    shift = math.floor(num_day_avg / 2)
-    giorni_per_20 = round(((20.0 - last_avg_n_pos) \
-        / last_avg_n_pos_diff) - shift)
-    if giorni_per_20 >= 0:
-        data_20 = datetime.now() + timedelta(days=giorni_per_20)
-        print("Giorno arrivo a 20.00 previsto: " + str(data_20)[:10])
-    else:
-        print("Trend negativo, previsione a 20.0 impossibile")
-
-
-
 def traccia_andamento_vaccini(date, prima_dose, seconda_dose, regione, id):
     plt.figure(id + 6)
     linea_prima_dose, = plt.plot(date, prima_dose)
@@ -645,46 +626,6 @@ def traccia_ultimi_giorni(days, dates, n_pos_7d, new_c_7d, new_t_7d, n_pos_per_c
     plt.title('Valori %s media mobile ultimi 7 giorni' % regione)
 
 
-# @desc     TODO
-# @param    TODO
-# @param    TODO
-# @param    TODO
-# @return   TODO
-# TODO: Cambiare funzione in italiano e commentare
-def find_last_decrease(dates, n_pos_7d):
-    date = "00/00"
-    val_prima = 0.0
-    val = 0.0
-
-    for i in range(7, len(dates)):
-        if n_pos_7d[i] < n_pos_7d[i - 7]:
-            date_prima = dates[i - 7]
-            date = dates[i]
-            val_prima = n_pos_7d[i - 7]
-            val =n_pos_7d[i]
-
-    print(date_prima + ": %.2f" % val_prima)
-    print(date + ": %.2f" % val)
-
-
-# @desc     TODO
-# @param    TODO
-# @param    TODO
-# @param    TODO
-# @return   TODO
-# TODO: Cambiare funzione in italiano e commentare
-def find_last_above(dates, n_pos_7d, num_above):
-    date = "00/00"
-    val = 0.0
-
-    for i in range(7, len(dates)):
-        if n_pos_7d[i] > num_above:
-            date = dates[i]
-            val = n_pos_7d[i]
-
-    print(("Last above %d: " % num_above) + date + " - %.2f" % val)
-
-
 # @desc     Stampa due valori con rispettive date per paragonarli
 # @param    string f_iniz stringa iniziale stampata per identificare i dati
 # @param    string d1 data del primo valore
@@ -714,8 +655,7 @@ def stampa_due_valori(f_iniz, d1, v1, f1, d2, v2, f2, se_percentuale):
 # @param    int gg_trac ultimi giorni di dati da tracciare sul grafico
 # @return   TODO
 # TODO: Cambiare funzione in italiano e commentare
-def calcoli_e_stampe(dati, regionName, tot_pop, id_grafico, pop_rel = 100000.0,
-                     gg_cum = 7, gg_trac = 30):
+def calcoli_e_stampe(dati, regionName, tot_pop, id_grafico, pop_rel = 100000.0, gg_cum = 7, gg_trac = 30):
     # Prima stampa per distinguere Italia e regioni
     print("------------------%s------------------" % regionName)
     print('\nNota: I seguenti valori sono cumulativi sugli ultimi %d giorni e ' 
@@ -891,16 +831,17 @@ if __name__ == "__main__":
             
             if arg_lower == 'italia':
                 dati = caric_dati_it()
-                dati_vaccini = caric_dati_vaccini_it()
+                dati_vaccini = caric_dati_vaccini()
                 dati_json = lett_dati_it(dati, dati_vaccini)
                 pop = TOT_POP_IT
             elif arg_lower in INFO_REGIONI:
                 info_reg_json = INFO_REGIONI[arg_lower]
                 reg_nome = info_reg_json['nome_dato']
                 pop = info_reg_json['pop']
+                area = info_reg_json['area']
 
                 dati = caric_dati_reg()
-                dati_vaccini = caric_dati_vaccini_reg(arg_lower)
+                dati_vaccini = caric_dati_vaccini(area)
                 dati_json = lett_dati_reg(dati, dati_vaccini, reg_nome)
             else:
                 print(arg + ' non è una regione')
