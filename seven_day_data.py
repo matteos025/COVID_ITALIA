@@ -162,7 +162,7 @@ def caric_dati_vaccini(area = 'IT'):
 
     for dato in dati['data']:
         if ((area == 'IT') or (dato['area'] == area)):
-            data = dato['data_somministrazione'][5:10]
+            data = dato['data_somministrazione'][:10]
             if data in dati_parsati:
                 dati_parsati[data]['sesso_femminile'] += dato['sesso_femminile']
                 dati_parsati[data]['sesso_maschile'] += dato['sesso_maschile']
@@ -228,7 +228,7 @@ def lett_dati_it(dati, dati_vaccini):
         tot_c_oggi = dato['casi_testati']
         tot_t_oggi = dato['tamponi']
         tot_m_oggi = dato['deceduti']
-        data = dato['data'][5:10]
+        data = dato['data'][:10]
 
         # Si prendono i dati da quando inizia ad essere fornito il
         # dato sui casi testati (fine Aprile)
@@ -306,7 +306,7 @@ def lett_dati_reg(dati, dati_vaccini, regione):
     # sono forniti, quindi vanno calcolati
     for dato in dati:
 
-        data = dato['data'][5:10]
+        data = dato['data'][:10]
         # Controllo che il dato si riferisca alla regione di nostro
         # interessa
         if (dato['denominazione_regione'] == regione) and (data != ultima_data):
@@ -499,8 +499,8 @@ def calcoli(dati, tot_pop, gg, rel_pop):
 # TODO: Cambiare funzione in italiano e commentare
 def stampa_valore(data, val, str_iniz, se_percentuale):
     # Recupera giorno e mese in formato stringa di numero
-    giorno = data[3] + data[4]
-    mese_str_di_num = data[0] + data[1]
+    giorno = data[8] + data[9]
+    mese_str_di_num = data[5] + data[6]
 
     # Conversione del mese da stringa di un numero in un numero
     mese_int = int(mese_str_di_num)
@@ -658,8 +658,8 @@ def stampa_due_valori(f_iniz, d1, v1, f1, d2, v2, f2, se_percentuale):
 def calcoli_e_stampe(dati, regionName, tot_pop, id_grafico, pop_rel = 100000.0, gg_cum = 7, gg_trac = 30):
     # Prima stampa per distinguere Italia e regioni
     print("------------------%s------------------" % regionName)
-    print('\nNota: I seguenti valori sono cumulativi sugli ultimi %d giorni e ' 
-        'sono per ' f'{int(pop_rel):,} persone\n' % gg_cum)
+    print('\nDATI (Nota: I seguenti valori sono cumulativi sugli ultimi %d giorni e ' 
+        'sono per ' f'{int(pop_rel):,} persone)\n' % gg_cum)
     dati_calcolati = calcoli(dati, tot_pop, gg_cum, pop_rel)
 
     # Indici di oggi e di una settimana fa'
@@ -743,7 +743,8 @@ def calcoli_e_stampe(dati, regionName, tot_pop, id_grafico, pop_rel = 100000.0, 
         "   \u2022 OGGI", data_sett_fa, n_m_sett_fa, 
         "   \u2022 SETTIMANA FA", False)
 
-    
+    print("\nVACCINI")
+
     somm_media_oggi = dati_calcolati[indice_oggi]['media_somm_7gg']
     somm_media_sett_fa = dati_calcolati[indice_sett_fa]['media_somm_7gg']
 
@@ -790,7 +791,7 @@ def calcoli_e_stampe(dati, regionName, tot_pop, id_grafico, pop_rel = 100000.0, 
     
     for i in range(0, len(dati_calcolati)):
         dati_i = dati_calcolati[i]
-        date.append(dati_i['data'])
+        date.append(dati_i['data'][5:])
         n_pos_7d.append(dati_i['nuovi_pos_7gg'])
         new_c_7d.append(dati_i['nuovi_casi_test_7gg'])
         new_t_7d.append(dati_i['nuovi_tamponi_7gg'])
@@ -810,7 +811,7 @@ def calcoli_e_stampe(dati, regionName, tot_pop, id_grafico, pop_rel = 100000.0, 
 
     for i in range(0, len(dati)):
         if dati[i]['tot_prima_dose'] > 0:
-            date.append(dati[i]['data'])
+            date.append(dati[i]['data'][5:])
             prima_dose.append(dati[i]['tot_prima_dose'] * 100.0 / tot_pop)
             seconda_dose.append(dati[i]['tot_sec_dose'] * 100.0 / tot_pop)
 
