@@ -542,19 +542,25 @@ def avg_over_some_days(date, valori, giorni):
     return date[giorni - 1:], media_valori
 
 
-def traccia_andamento_vaccini(date, prima_dose, seconda_dose, regione, id):
+def traccia_andamento_vaccini(date, prima_dose, seconda_dose, somm_gg, regione, id):
     plt.figure(id + 6)
     linea_prima_dose, = plt.plot(date, prima_dose)
     linea_prima_dose.set_label('Prima dose')
 
     linea_seconda_dose, = plt.plot(date, seconda_dose)
-    linea_seconda_dose.set_label('Seconda dose')
+    linea_seconda_dose.set_label('Completamente vaccinati')
 
     plt.xticks(np.arange(0, len(date), step=4))
     plt.xlabel('Date')
     plt.ylabel('Percentuale di popolazione')
     plt.title('Somministrazioni cumulative in %s' % regione)
     plt.legend()
+
+    plt.figure(id + 7)
+    plt.plot(date, somm_gg)
+    plt.xlabel('Date')
+    plt.ylabel('Numero di somministrazioni giornaliere in migliaia')
+    plt.title('Somministrazioni giornaliere in %s' % regione)
 
 
 # @desc     TODO
@@ -757,6 +763,14 @@ def calcoli_e_stampe(dati, regionName, tot_pop, id_grafico, pop_rel = 100000.0, 
     indice_oggi = len(dati) - 1
     indice_sett_fa = len(dati) - 8
 
+    somm_oggi = dati[indice_oggi]['somministrazioni_oggi']
+    somm_sett_fa = dati[indice_sett_fa]['somministrazioni_oggi']
+
+    frase_iniziale = "\nSomministrazioni giornaliere:"
+    stampa_due_valori(frase_iniziale, data_oggi, somm_oggi, 
+        "   \u2022 OGGI", data_sett_fa, somm_sett_fa, 
+        "   \u2022 SETTIMANA FA", False)
+
     # Today's percentage of people vaccinated with first dose
     n_p_v_oggi = dati[indice_oggi]['tot_prima_dose'] * 100 / tot_pop
     # Week ago's percentage of people vaccinated with first dose
@@ -772,7 +786,7 @@ def calcoli_e_stampe(dati, regionName, tot_pop, id_grafico, pop_rel = 100000.0, 
     # Week ago's percentage of people vaccinated with second dose
     n_s_v_sett_fa = dati[indice_sett_fa]['tot_sec_dose'] * 100 / tot_pop
 
-    frase_iniziale = "\nTotale vaccinati seconda dose:"
+    frase_iniziale = "\nTotale completamente vaccinati:"
     stampa_due_valori(frase_iniziale, data_oggi, n_s_v_oggi, 
         "   \u2022 OGGI", data_sett_fa, n_s_v_sett_fa, 
         "   \u2022 SETTIMANA FA", True)
@@ -808,14 +822,16 @@ def calcoli_e_stampe(dati, regionName, tot_pop, id_grafico, pop_rel = 100000.0, 
     date = []
     prima_dose = []
     seconda_dose = []
+    somm_gg = []
 
     for i in range(0, len(dati)):
         if dati[i]['tot_prima_dose'] > 0:
             date.append(dati[i]['data'][5:])
             prima_dose.append(dati[i]['tot_prima_dose'] * 100.0 / tot_pop)
             seconda_dose.append(dati[i]['tot_sec_dose'] * 100.0 / tot_pop)
+            somm_gg.append(dati[i]['somministrazioni_oggi'] / 1000.0)
 
-    traccia_andamento_vaccini(date, prima_dose, seconda_dose, regionName, id_grafico)
+    traccia_andamento_vaccini(date, prima_dose, seconda_dose, somm_gg, regionName, id_grafico)
 
 
 if __name__ == "__main__":
@@ -850,7 +866,7 @@ if __name__ == "__main__":
 
             calcoli_e_stampe(dati_json, arg.upper(), pop, id)
             
-            id += 7
+            id += 8
 
         plt.show()
 
